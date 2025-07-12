@@ -1,32 +1,35 @@
 import './globals.css'
-import { Inter, Roboto_Mono } from 'next/font/google'
 import Navbar from '@/components/ui/Navbar'
+import { LoginModalProvider } from '@/context/LoginModalContext'
+import LoginModalWrapper from '@/components/modals/LoginModalWrapper'
 
-const geistSans = Inter({
+// Dummy font variables to avoid fetching fonts in Codex
+const inter = {
   variable: '--font-geist-sans',
-  subsets: ['latin'],
-})
+}
 
-const geistMono = Roboto_Mono({
+const robotoMono = {
   variable: '--font-geist-mono',
-  subsets: ['latin'],
-})
+}
 
 export const metadata = {
   title: 'PartaiBook',
   description: 'Plan unforgettable events with AI',
 }
 
-export default function RootLayout({
-  children,
-}: {
+interface RootLayoutProps {
   children: React.ReactNode
-}) {
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Navbar />
-        {children}
+      <body className={`${inter.variable} ${robotoMono.variable} antialiased bg-gray-100 min-h-screen`}>
+        <LoginModalProvider>
+          <Navbar />
+          <LoginModalWrapper />
+          <main className="bg-white min-h-screen p-4">{children}</main>
+        </LoginModalProvider>
       </body>
     </html>
   )
