@@ -6,13 +6,12 @@ import 'react-datepicker/dist/react-datepicker.css'
 
 const VENDOR_TYPES = ['Cake', 'DJ', 'Venue', 'Caterer', 'Decor', 'Photographer', 'Balloons']
 
-export default function Home() {
+function HeroSearch() {
+  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [selectedVendors, setSelectedVendors] = useState<string[]>([])
   const [location, setLocation] = useState('')
   const [budget, setBudget] = useState('')
   const [date, setDate] = useState<Date | null>(null)
-  const [vibe, setVibe] = useState('')
-  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [locationOpen, setLocationOpen] = useState(false)
   const [budgetOpen, setBudgetOpen] = useState(false)
   const [dateOpen, setDateOpen] = useState(false)
@@ -49,115 +48,118 @@ export default function Home() {
   }
 
   const handleSearch = () => {
-    console.log({ selectedVendors, location, budget, date, vibe })
+    console.log({ selectedVendors, location, budget, date })
   }
 
   return (
+    <div className="relative bg-white border rounded-2xl shadow-lg px-8 py-8 max-w-4xl mx-auto w-full flex flex-wrap md:flex-nowrap items-center gap-4" style={{ minHeight: '120px' }}>
+      {/* Vendor Dropdown */}
+      <div className="relative w-full md:w-auto" style={{ minWidth: '12rem', maxWidth: '12rem' }} ref={dropdownRef}>
+        <button
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+          className="border rounded-full px-4 py-2 w-full text-sm bg-gray-50 hover:bg-gray-100 transition text-left text-gray-900 placeholder-gray-500"
+          style={{ minWidth: '12rem', maxWidth: '12rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
+          {selectedVendors.length > 0 ? `${selectedVendors.join(', ')}` : 'What do you need? (e.g. Cake, DJ…)'}
+        </button>
+
+        {dropdownOpen && (
+          <div className="absolute top-full left-0 mt-2 z-20 bg-white border rounded-xl shadow-lg p-3 w-48" style={{ minWidth: '12rem' }}>
+            {VENDOR_TYPES.map((type) => (
+              <button
+                key={type}
+                onClick={() => toggleVendor(type)}
+                className={`block w-full text-left px-3 py-1.5 text-sm rounded-md mb-1 text-gray-900 hover:bg-gray-100 ${
+                  selectedVendors.includes(type)
+                    ? 'font-semibold underline'
+                    : ''
+                }`}
+                style={{ background: 'transparent' }}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Location Input */}
+      <div className="w-full md:w-auto" style={{ minWidth: '10rem', maxWidth: '10rem' }}>
+        <input
+          type="text"
+          value={location}
+          onChange={e => setLocation(e.target.value)}
+          placeholder="Where’s the party?"
+          className="border rounded-full px-4 py-2 w-full text-sm bg-gray-50 hover:bg-gray-100 transition text-left text-gray-900 placeholder-gray-900"
+          style={{ minWidth: '10rem', maxWidth: '10rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        />
+      </div>
+
+      {/* Budget Input */}
+      <div className="w-full md:w-auto" style={{ minWidth: '8rem', maxWidth: '8rem' }}>
+        <input
+          type="number"
+          value={budget}
+          onChange={e => setBudget(e.target.value)}
+          placeholder="Budget ($)"
+          className="border rounded-full px-4 py-2 w-full text-sm bg-gray-50 hover:bg-gray-100 transition text-left text-gray-900 placeholder-gray-900"
+          style={{ minWidth: '8rem', maxWidth: '8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        />
+      </div>
+
+      {/* Date Dropdown */}
+      <div className="relative w-full md:w-auto" style={{ minWidth: '10rem', maxWidth: '10rem' }} ref={dateRef}>
+        <button
+          onClick={() => setDateOpen(!dateOpen)}
+          className="border rounded-full px-4 py-2 w-full text-sm bg-gray-50 hover:bg-gray-100 transition text-left text-gray-900 placeholder-gray-500"
+          style={{ minWidth: '10rem', maxWidth: '10rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
+          {date ? date.toLocaleDateString() : "Date"}
+        </button>
+        {dateOpen && (
+          <div className="absolute top-full left-0 mt-2 z-20 bg-white border rounded-xl shadow-lg p-3 w-56">
+            <DatePicker
+              selected={date}
+              onChange={(d: Date | null) => { setDate(d); setDateOpen(false) }}
+              inline
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Button */}
+      <button
+        onClick={handleSearch}
+        className="bg-indigo-600 text-white font-semibold px-6 py-2 rounded-full shadow hover:bg-indigo-700 transition text-sm"
+      >
+        Find Vendors
+      </button>
+    </div>
+  )
+}
+
+export default function Home() {
+  return (
     <main className="min-h-screen w-full bg-white">
-      <section className="text-center py-20 md:py-32 px-0 bg-gradient-to-b from-indigo-100 via-pink-100 to-white">
+      <section className="text-center py-16 md:py-24 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-indigo-700 text-5xl md:text-6xl font-extrabold tracking-tight drop-shadow-sm mb-4 font-sans">
+          <h1 className="text-blue-600 text-4xl font-bold">
             Welcome to PartaiBook 🎉
           </h1>
-          <p className="text-gray-700 mb-12 text-xl md:text-2xl font-medium max-w-2xl mx-auto">
+          <p className="text-gray-600 mb-10 text-lg md:text-xl">
             Plan and book life’s celebrations in minutes with AI.
           </p>
 
           {/* Smart Search UI */}
-          <div id="search-pill" className="relative bg-white border rounded-2xl shadow-lg px-4 md:px-8 py-8 max-w-4xl mx-auto w-full flex flex-col gap-4" style={{ minHeight: '120px' }}>
-            {/* Vibe Textarea */}
-            <textarea
-              value={vibe}
-              onChange={e => setVibe(e.target.value)}
-              placeholder={'Tell us your vibe (e.g. "7th bday party, dinosaur theme, cake for 20 people, balloons, entertainment, maybe food")'}
-              className="w-full border rounded-xl px-4 py-3 text-sm bg-gray-50 hover:bg-gray-100 transition text-gray-900 placeholder-gray-500 resize-none mb-2"
-              rows={2}
-              style={{ minWidth: '100%', maxWidth: '100%' }}
-            />
-            {/* Search pill row: all boxes in a row */}
-            <div className="w-full flex flex-wrap md:flex-nowrap items-center gap-4 justify-center">
-              {/* Location Input */}
-              <div className="w-full md:w-auto">
-                <input
-                  type="text"
-                  value={location}
-                  onChange={e => setLocation(e.target.value)}
-                  placeholder="Location"
-                  className="border rounded-full px-4 py-2 w-full text-sm bg-gray-50 hover:bg-gray-100 transition text-left text-gray-900 placeholder-gray-900"
-                  style={{ minWidth: 0, maxWidth: '100%' }}
-                />
-              </div>
-
-              {/* Date Dropdown */}
-              <div className="relative w-full md:w-auto" ref={dateRef}>
-                <button
-                  onClick={() => setDateOpen(!dateOpen)}
-                  className="border rounded-full px-4 py-2 w-full text-sm bg-gray-50 hover:bg-gray-100 transition text-left text-gray-900 placeholder-gray-500"
-                  style={{ minWidth: 0, maxWidth: '100%' }}
-                >
-                  {date ? date.toLocaleDateString() : "Date"}
-                </button>
-                {dateOpen && (
-                  <div className="absolute top-full left-0 mt-2 z-20 bg-white border rounded-xl shadow-lg p-3 w-56">
-                    <DatePicker
-                      selected={date}
-                      onChange={(d: Date | null) => { setDate(d); setDateOpen(false) }}
-                      inline
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Budget Input */}
-              <div className="w-full md:w-auto">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={budget}
-                  onChange={e => setBudget(e.target.value)}
-                  placeholder="Budget (optional)"
-                  className="border rounded-full px-4 py-2 w-full text-sm bg-gray-50 hover:bg-gray-100 transition text-left text-gray-900 placeholder-gray-900 appearance-none"
-                  style={{ minWidth: 0, maxWidth: '100%' }}
-                  autoComplete="off"
-                />
-              </div>
-
-              {/* Button */}
-              <button
-                onClick={handleSearch}
-                className="bg-indigo-600 text-white font-semibold px-6 py-2 rounded-full shadow hover:bg-indigo-700 transition text-sm flex items-center justify-center w-full md:w-auto"
-                aria-label="Search"
-              >
-                {/* Search Icon (Magnifying Glass) */}
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <circle cx="11" cy="11" r="7" />
-                  <line x1="16.65" y1="16.65" x2="21" y2="21" strokeLinecap="round" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Add more space below the search pill */}
-          <div className="h-10 md:h-14" />
-
-          {/* Vendor Section Heading */}
-          <h2 className="text-3xl md:text-4xl font-bold text-indigo-700 mb-6 text-center">Spotlight Vendors</h2>
+          <HeroSearch />
 
           {/* Dummy Vendor Cards */}
-          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="rounded-2xl border border-gray-100 p-6 shadow-lg hover:shadow-2xl transition bg-white group relative overflow-hidden">
-                <div className="h-32 bg-gradient-to-tr from-indigo-100 via-pink-100 to-white mb-4 rounded-xl flex items-center justify-center">
-                  <svg className="w-12 h-12 text-indigo-300 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M8 12h8M12 8v8" />
-                  </svg>
-                </div>
-                <h4 className="font-semibold text-lg text-gray-900 mb-1">Vendor Name {i}</h4>
-                <span className="inline-block bg-indigo-50 text-indigo-600 text-xs font-semibold px-3 py-1 rounded-full mb-2">DJ</span>
-                <p className="text-sm text-gray-500 mb-3">$250 starting</p>
-                <button className="w-full bg-indigo-600 text-white font-semibold py-2 rounded-full shadow hover:bg-indigo-700 transition text-sm mt-2">View Profile</button>
+              <div key={i} className="rounded-2xl border p-6 shadow-lg hover:shadow-xl transition bg-white">
+                <div className="h-32 bg-gray-100 mb-4 rounded-xl" />
+                <h4 className="font-semibold text-lg">Vendor Name {i}</h4>
+                <p className="text-sm text-gray-500">DJ · $250 starting</p>
               </div>
             ))}
           </div>
@@ -165,53 +167,32 @@ export default function Home() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="w-full pt-4 pb-12 px-0 bg-white">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-indigo-700 mb-8 font-sans drop-shadow-sm mt-0 pt-0">
+      <section id="how-it-works" className="w-full py-20 px-6 bg-gray-50">
+        <h2 className="text-3xl md:text-4xl font-bold text-center text-indigo-600 mb-12">
           How It Works
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 max-w-6xl mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto px-4">
           <div className="text-center">
-            <div className="flex justify-center mb-4">
-              <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-indigo-100 text-3xl">🎈</span>
-            </div>
-            <h3 className="text-2xl font-semibold mb-3 text-gray-900">1. Tell us your vibe</h3>
-            <p className="text-base text-gray-600 leading-relaxed">
-              Throwing a birthday? Baby shower? Graduation bash? Just drop your vibe, date, location – even your budget. That’s it. Let the magic begin.
+            <h3 className="text-xl font-semibold mb-3">🎈 1. Tell us your vibe</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Throwing a birthday? Baby shower? Graduation bash? Just drop your vibe, date, location – and your budget. That’s it. Let the magic begin.
             </p>
           </div>
           <div className="text-center">
-            <div className="flex justify-center mb-4">
-              <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-indigo-100 text-3xl">⚡</span>
-            </div>
-            <h3 className="text-2xl font-semibold mb-3 text-gray-900">2. Get instant matches</h3>
-            <p className="text-base text-gray-600 leading-relaxed">
-              Our AI finds venues, bakers, decorators & more - instantly showing who's available so you can browse and book your party in minutes. No waiting. No chasing replies.
+            <h3 className="text-xl font-semibold mb-3">⚡ 2. Get instant matches</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Our AI searches live availability to instantly build you a dream team of vendors – decorators, venues, bakers & more. No waiting. No ghosting.
             </p>
           </div>
           <div className="text-center">
-            <div className="flex justify-center mb-4">
-              <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-indigo-100 text-3xl">🪄</span>
-            </div>
-            <h3 className="text-2xl font-semibold mb-3 text-gray-900">3. Book, chat and track</h3>
-            <p className="text-base text-gray-600 leading-relaxed">
-               Instant bookings, seamless chats, automatic reminders, and ghosting prevention AI - all beautifully organised in one intuitive event hub. Finally. </p>
+            <h3 className="text-xl font-semibold mb-3">🪄 3. Book, chat and track</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Book with one tap. Chat directly with vendors. And if someone cancels? The AI auto-finds a replacement or sorts your refund. Zero last-minute stress.
+            </p>
           </div>
-        </div>
-        {/* CTA Button to scroll to search pill */}
-        <div className="flex justify-center mt-12">
-          <button
-            onClick={() => {
-              const el = document.getElementById('search-pill');
-              if (el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              }
-            }}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-full shadow-lg text-base transition-all duration-200"
-          >
-            Let’s get this party started
-          </button>
         </div>
       </section>
     </main>
   )
 }
+/* --- END ORIGINAL page.tsx --- */

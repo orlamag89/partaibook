@@ -21,7 +21,8 @@
   }
 
   button {
-    @apply bg-indigo-600 text-white hover:bg-indigo-700 transition;
+    @apply bg-indigo-600 text-white transition;
+    /* Removed hover:bg-indigo-700 to prevent global hover color */
   }
 
   a {

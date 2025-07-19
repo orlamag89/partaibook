@@ -1,0 +1,139 @@
+/* === Base calendar container === */
+.react-datepicker {
+  display: flex;
+  flex-wrap: nowrap;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background-color: white;
+  padding: 1rem;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  width: auto;
+  min-width: 720px;
+  z-index: 50;
+  font-family: system-ui, sans-serif;
+}
+
+/* === Months side-by-side === */
+.react-datepicker__month-container {
+  display: inline-block;
+  vertical-align: top;
+  width: 50%;
+}
+
+/* === Header + month title === */
+.react-datepicker__header {
+  background: none;
+  border-bottom: none;
+  padding-bottom: 0.20rem;
+  margin-bottom: 0.2rem;
+}
+
+.react-datepicker__current-month {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: center;
+}
+
+/* === Day names (M T W T F S S) === */
+.react-datepicker__day-name,
+.react-datepicker__day,
+.react-datepicker__time-name {
+  width: 2.4rem;
+  line-height: 2.8rem;
+  margin: 0.4rem;
+  font-size: 0.85rem;
+  color: #000000;
+  font-weight: 500;
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Override weekday headers to single-letter style */
+.react-datepicker__day-name {
+  color: transparent;
+  position: relative;
+}
+
+.react-datepicker__day-name:nth-child(1)::after { content: "M"; }
+.react-datepicker__day-name:nth-child(2)::after { content: "T"; }
+.react-datepicker__day-name:nth-child(3)::after { content: "W"; }
+.react-datepicker__day-name:nth-child(4)::after { content: "T"; }
+.react-datepicker__day-name:nth-child(5)::after { content: "F"; }
+.react-datepicker__day-name:nth-child(6)::after { content: "S"; }
+.react-datepicker__day-name:nth-child(7)::after { content: "S"; }
+
+.react-datepicker__day-name::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  color: #736f6f;
+  text-align: center;
+}
+
+/* === Today (dashed circle) === */
+.react-datepicker__day--today {
+  border: 1px dashed #bbb;
+  font-weight: normal;
+  border-radius: 50%;
+}
+
+/* === Selected day (black ring only) === */
+.react-datepicker__day--selected {
+  border: 2px solid black;
+  background-color: transparent !important;
+  color: black !important;
+  font-weight: 600;
+  border-radius: 50%;
+}
+
+/* === Remove blue on hover for selected === */
+.react-datepicker__day--selected:hover {
+  background-color: transparent !important;
+  color: black !important;
+}
+
+/* === Hover on normal day === */
+.react-datepicker__day:hover {
+  background-color: #f3f4f6;
+  color: black;
+  border-radius: 8px;
+}
+
+/* === Remove focus outlines === */
+.react-datepicker__day:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* === Block out-of-month days === */
+.react-datepicker__day--outside-month {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.react-datepicker__month {
+  min-height: 20rem; /* Enough for 6 rows (6 x ~2.4rem + gaps) */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: start;
+  transition: all 0.25s ease; /* Optional: smooth height transition */
+}
+
+.react-datepicker__month {
+  animation: fadeSlideCalendar 0.25s ease-out;
+}
+
+@keyframes fadeSlideCalendar {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
