@@ -11,11 +11,11 @@ interface Vendor {
   image: string
   price: number
   location: string
-  selected: boolean
 }
 
 interface Props {
   vendors: Vendor[]
+  withLeftPadding?: boolean
 }
 
 export default function CategoryVendors({ vendors }: Props) {

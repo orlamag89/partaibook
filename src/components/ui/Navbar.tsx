@@ -4,19 +4,14 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import DatePicker from 'react-datepicker'
-import { supabase } from '@/lib/supabaseClient'
-import { useLoginModal } from '@/context/LoginModalContext'
 import HamburgerDrawer from '@/components/ui/HamburgerDrawer'
 import 'react-datepicker/dist/react-datepicker.css'
 import '@/app/datepicker.css'
 
 export default function Navbar() {
-  const [userEmail, setUserEmail] = useState<string | null>(null)
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
-
-  const { open } = useLoginModal()
 
   const [location, setLocation] = useState('')
   const [budget, setBudget] = useState('')
@@ -24,10 +19,6 @@ export default function Navbar() {
   const [date, setDate] = useState<Date | null>(null)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUserEmail(user?.email ?? null)
-    })
-
     setLocation(searchParams.get('location') || '')
     setBudget(searchParams.get('budget') || '')
     setVibe(searchParams.get('vibe') || '')

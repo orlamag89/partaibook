@@ -47,14 +47,14 @@ export default function SearchResultsPage() {
     setDate(d ? new Date(d) : null)
   }, [searchParams])
 
-  const handleSearch = () => {
-    const params = new URLSearchParams()
-    if (location) params.append('location', location)
-    if (budget) params.append('budget', budget)
-    if (vibe) params.append('vibe', vibe)
-    if (date) params.append('date', date.toISOString())
-    router.push(`/search?${params.toString()}`)
-  }
+const handleSearch = () => {
+  const params = new URLSearchParams()
+  if (location) params.append('location', location)
+  if (budget) params.append('budget', budget)
+  if (vibe) params.append('vibe', vibe)
+  if (date) params.append('date', date.toISOString())
+  router.push(`/search?${params.toString()}`)
+}
 
   // Count vendors
   const totalResults = mockVendors.length
@@ -78,7 +78,7 @@ export default function SearchResultsPage() {
               {count} {category}{count > 1 ? 's' : ''} available
             </h2>
             <CategoryVendors
-              vendors={mockVendors.filter((v, index) => v.category === category)}
+              vendors={mockVendors.filter(v => v.category === category)}
               withLeftPadding={true} // used to help arrow spacing inside component
             />
           </div>

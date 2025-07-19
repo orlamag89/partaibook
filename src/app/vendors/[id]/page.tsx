@@ -1,6 +1,8 @@
 import { supabase } from '@/lib/supabaseClient'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
+
 
 export default async function VendorProfile({ params }: { params: { id: string } }) {
   const { data, error } = await supabase
@@ -22,12 +24,14 @@ export default async function VendorProfile({ params }: { params: { id: string }
       <p className="text-sm text-gray-500 mt-2">Contact: {data.email}</p>
 
       {data.image_url && (
-        <img
-          src={data.image_url}
-          alt={`Image of ${data.name}`}
-          className="mt-6 w-full rounded-md shadow-md"
-        />
-      )}
+  <Image
+    src={data.image_url}
+    alt={`Image of ${data.name}`}
+    width={600}
+    height={400}
+    className="mt-6 w-full rounded-md shadow-md object-cover"
+  />
+)}
 
       <Link
         href={`/vendors/${data.id}/book`}

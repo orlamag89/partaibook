@@ -2,7 +2,7 @@
 
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
-
+import Image from 'next/image'
 interface VendorProfileModalProps {
   isOpen: boolean
   onClose: () => void
@@ -60,11 +60,13 @@ export default function VendorProfileModal({ isOpen, onClose, vendor }: VendorPr
 
                 {/* Vendor Image */}
                 <div className="h-52 w-full bg-gray-100 rounded-xl mb-4 overflow-hidden">
-                  <img
-                    src={vendor.image}
-                    alt={vendor.name}
-                    className="w-full h-full object-cover"
-                  />
+                  <Image
+  src={vendor.image}
+  alt={vendor.name}
+  width={600}
+  height={300}
+  className="w-full h-full object-cover"
+/>
                 </div>
 
                 {/* Vendor Info */}

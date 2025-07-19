@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useLoginModal } from '@/context/LoginModalContext'
 import { supabase } from '@/lib/supabaseClient'
+import Image from 'next/image'
 
 export default function LoginModal() {
 const { isOpen, close } = useLoginModal()
@@ -43,10 +44,15 @@ const { isOpen, close } = useLoginModal()
         setMessage('Check your inbox to confirm your email.')
       } else {
         close()
-      }
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong')
-    }
+      } 
+      
+    } catch (err) {
+  if (err instanceof Error) {
+    setError(err.message || 'Something went wrong')
+  } else {
+    setError('Something went wrong')
+  }
+}
   }
 
   const handleGoogleLogin = async () => {
@@ -128,11 +134,13 @@ const { isOpen, close } = useLoginModal()
             onClick={handleGoogleLogin}
             className="w-full border border-gray-300 rounded-lg py-2 hover:bg-blue-50 flex justify-center items-center gap-2 transition bg-white text-gray-700 font-medium"
           >
-            <img
-              src="https://www.svgrepo.com/show/475656/google-color.svg"
-              alt="Google"
-              className="h-5 w-5"
-            />
+            <Image
+  src="https://www.svgrepo.com/show/475656/google-color.svg"
+  alt="Google"
+  width={20}
+  height={20}
+  className="h-5 w-5"
+/>
             Continue with Google
           </button>
         </Dialog.Panel>
