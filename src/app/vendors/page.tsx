@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 
 type Vendor = {
-  id: number
+  id: string
   name: string
   service_type: string
   location: string

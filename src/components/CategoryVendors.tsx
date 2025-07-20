@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
 
 interface Vendor {
-  id: number
+  id: string
   name: string
   category: string
   image: string
@@ -25,10 +25,10 @@ export default function CategoryVendors({ vendors }: Props) {
     return acc
   }, {})
 
-  const [selectedVendors, setSelectedVendors] = useState<Set<number>>(new Set())
+  const [selectedVendors, setSelectedVendors] = useState<Set<string>>(new Set())
   const scrollRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
-  const toggleVendorSelection = (id: number) => {
+  const toggleVendorSelection = (id: string) => {
     setSelectedVendors(prev => {
       const newSet = new Set(prev)
       if (newSet.has(id)) {

@@ -1,22 +1,35 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import { usePathname, useSearchParams, useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import { usePathname, useSearchParams } from 'next/navigation'
 import DatePicker from 'react-datepicker'
 import HamburgerDrawer from '@/components/ui/HamburgerDrawer'
 import 'react-datepicker/dist/react-datepicker.css'
 import '@/app/datepicker.css'
+import { useSearchContext } from '@/context/SearchContext'
 
 export default function Navbar() {
   const pathname = usePathname()
-  const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [location, setLocation] = useState('')
-  const [budget, setBudget] = useState('')
-  const [vibe, setVibe] = useState('')
-  const [date, setDate] = useState<Date | null>(null)
+  const {
+    location,
+    setLocation,
+    budget,
+    setBudget,
+    vibe,
+    setVibe,
+    date,
+    setDate,
+    handleSearch,
+  } = useSearchContext()
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === 'Enter') {
+    handleSearch()
+  }
+}
 
   useEffect(() => {
     setLocation(searchParams.get('location') || '')
@@ -24,16 +37,7 @@ export default function Navbar() {
     setVibe(searchParams.get('vibe') || '')
     const d = searchParams.get('date')
     setDate(d ? new Date(d) : null)
-  }, [searchParams])
-
-  const handleSearch = () => {
-    const params = new URLSearchParams()
-    if (location) params.append('location', location)
-    if (budget) params.append('budget', budget)
-    if (vibe) params.append('vibe', vibe)
-    if (date) params.append('date', date.toISOString())
-    router.push(`/search?${params.toString()}`)
-  }
+  }, [searchParams, setLocation, setBudget, setVibe, setDate])
 
   return (
     <nav className="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
@@ -46,6 +50,7 @@ export default function Navbar() {
           <input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
+              onKeyDown={handleKeyDown}
             placeholder="Where"
             className="border rounded-full px-4 py-2 w-full text-sm text-black bg-gray-50"
           />
@@ -59,12 +64,22 @@ export default function Navbar() {
             monthsShown={1}
             className="border rounded-full px-4 py-2 w-full text-sm text-black bg-gray-50"
             calendarClassName="airbnb-calendar"
+              onKeyDown={handleKeyDown}
+
           />
           <input
             value={vibe}
             onChange={(e) => setVibe(e.target.value)}
             placeholder="What do you need?"
+              onKeyDown={handleKeyDown}
             className="border rounded-full px-4 py-2 w-full text-sm text-black bg-gray-50"
+          />
+          <input
+  value={budget}
+  onChange={(e) => setBudget(e.target.value)}
+  placeholder="Budget"
+    onKeyDown={handleKeyDown}
+  className="border rounded-full px-4 py-2 w-full text-sm text-black bg-gray-50"
           />
           <button
             onClick={handleSearch}
