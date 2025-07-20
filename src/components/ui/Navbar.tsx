@@ -64,8 +64,6 @@ export default function Navbar() {
             monthsShown={1}
             className="border rounded-full px-4 py-2 w-full text-sm text-black bg-gray-50"
             calendarClassName="airbnb-calendar"
-              onKeyDown={handleKeyDown}
-
           />
           <input
             value={vibe}

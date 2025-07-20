@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 
+
 export default async function VendorProfile({ params }: { params: { id: string } }) {
   const { data, error } = await supabase
     .from('vendors')
