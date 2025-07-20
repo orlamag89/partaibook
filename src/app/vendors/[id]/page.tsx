@@ -3,13 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 
-interface VendorProfilePageProps {
-  params: {
-    id: string
-  }
-}
-
-export default async function VendorProfile({ params }: VendorProfilePageProps) {
+export default async function VendorProfile({ params }: { params: { id: string } }) {
   const { data, error } = await supabase
     .from('vendors')
     .select('*')
@@ -25,7 +19,7 @@ export default async function VendorProfile({ params }: VendorProfilePageProps) 
         {data.service_type} in {data.location}
       </p>
       <p className="text-gray-800 text-base mt-4">{data.about_your_business}</p>
-      <p className="text-lg font-semibold mt-6">Price Range: {data.price_range}</p>
+      <p className="text-lg font-semibold mt-6">Price: ${data.price}</p>
       <p className="text-sm text-gray-500 mt-2">Contact: {data.email}</p>
 
       {data.image_url && (
