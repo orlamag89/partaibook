@@ -5,7 +5,7 @@ import { useLoginModal } from '@/context/LoginModalContext'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 
-export default function HamburgerDrawer() {
+export default function HamburgerDrawer({ className = "" }: { className?: string }) {
   const { open } = useLoginModal()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -17,7 +17,7 @@ export default function HamburgerDrawer() {
       {/* Hamburger + Account Icon */}
       <button
         onClick={openDrawer}
-        className="flex items-center gap-2 text-gray-700 hover:text-blue-500 focus:outline-none bg-transparent"
+        className={`flex items-center gap-2 text-foreground hover:text-primary focus:outline-none bg-transparent ${className}`}
         style={{ background: 'transparent' }}
         aria-label="Open menu"
       >

@@ -1,198 +1,277 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useRef } from 'react'
-import DatePicker from 'react-datepicker'
-import 'react-datepicker/dist/react-datepicker.css'
+import { useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { Search, Sparkles } from 'lucide-react';
+import '@/app/globals.css'
+// Assuming these components exist in your project under @/components/ui
+// You might need to adjust paths or component names based on your actual setup
 
-const VENDOR_TYPES = ['Cake', 'DJ', 'Venue', 'Caterer', 'Decor', 'Photographer', 'Balloons']
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import VendorModal from '@/components/modals/VendorModal';
+import Navbar from '@/components/ui/Navbar';
 
-function HeroSearch() {
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [selectedVendors, setSelectedVendors] = useState<string[]>([])
-  const [location, setLocation] = useState('')
-  const [budget, setBudget] = useState('')
-  const [date, setDate] = useState<Date | null>(null)
-  const [locationOpen, setLocationOpen] = useState(false)
-  const [budgetOpen, setBudgetOpen] = useState(false)
-  const [dateOpen, setDateOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const locationRef = useRef<HTMLDivElement>(null)
-  const budgetRef = useRef<HTMLDivElement>(null)
-  const dateRef = useRef<HTMLDivElement>(null)
+// Mock data for vendors - replace with your actual data fetching
+const mockVendors = [
+  {
+    id: '1',
+    name: 'Sweet Dreams Bakery',
+    location: 'Brooklyn, NY',
+    image: '/images/bakery.jpg', // Placeholder, replace with actual image paths
+    description: 'Custom cakes, cupcakes, and dessert tables. Specializing in whimsical designs and Instagram-worthy treats.',
+    price: 150,
+    galleryImages: ['/images/bakery_gallery1.jpg', '/images/bakery_gallery2.jpg', '/images/bakery_gallery3.jpg'],
+    bio: 'Sweet Dreams Bakery has been crafting delicious and beautiful custom cakes for over 10 years. We believe every celebration deserves a centerpiece that tastes as good as it looks. Our team works closely with clients to bring their sweetest visions to life, from elegant wedding cakes to fun, themed birthday treats. We use only the finest ingredients and offer a variety of flavors and dietary options.',
+  },
+  {
+    id: '2',
+    name: 'Groove Masters DJ',
+    location: 'Queens, NY',
+    image: '/images/dj.jpg', // Placeholder, replace with actual image paths
+    description: 'Professional DJ services for intimate gatherings. Expert at reading the room and keeping the energy perfect.',
+    price: 300,
+    galleryImages: ['/images/dj_gallery1.jpg', '/images/dj_gallery2.jpg', '/images/dj_gallery3.jpg'],
+    bio: 'At Groove Masters DJ, we specialize in creating the perfect atmosphere for any event. Our experienced DJs have a vast music library spanning all genres, ensuring your guests are always on the dance floor. We pride ourselves on our ability to seamlessly blend tracks and respond to the crowd&apos;s energy, making every party unforgettable. From intimate brunches to lively micro-weddings, we tailor our sets to your unique vibe.',
+  },
+  {
+    id: '3',
+    name: 'Balloon Bliss Co.',
+    location: 'Manhattan, NY',
+    image: '/images/balloons.jpg', // Placeholder, replace with actual image paths
+    description: 'Stunning balloon installations and decor. From simple bouquets to elaborate arches and backdrops.',
+    price: 75,
+    galleryImages: ['/images/balloons_gallery1.jpg', '/images/balloons_gallery2.jpg', '/images/balloons_gallery3.jpg'],
+    bio: 'Transform your event space with the magic of balloons! Balloon Bliss Co. offers bespoke balloon artistry for all occasions. Whether you&apos;re looking for a vibrant arch, a whimsical backdrop, or elegant balloon bouquets, our creative team will design and install stunning arrangements that perfectly complement your theme and vision. We use high-quality, eco-friendly balloons to create unforgettable visual experiences.',
+  },
+  {
+    id: '4',
+    name: 'Party Perfect Planners',
+    location: 'Bronx, NY',
+    image: '/images/planner.jpg', // Placeholder, replace with actual image paths
+    description: 'Full-service event planning for any occasion, big or small. We handle every detail so you don&apos;t have to.',
+    price: 500,
+    galleryImages: ['/images/planner_gallery1.jpg', '/images/planner_gallery2.jpg', '/images/planner_gallery3.jpg'],
+    bio: 'Party Perfect Planners takes the stress out of event planning. From concept to execution, our dedicated team manages every detail, ensuring a flawless and memorable experience for you and your guests. We specialize in personalized events, working closely with you to understand your vision and bring it to life. Let us handle the logistics, vendor coordination, and design, so you can relax and enjoy your perfect party.',
+  },
+];
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false)
-      }
-      if (locationOpen && locationRef.current && !locationRef.current.contains(event.target as Node)) {
-        setLocationOpen(false)
-      }
-      if (budgetOpen && budgetRef.current && !budgetRef.current.contains(event.target as Node)) {
-        setBudgetOpen(false)
-      }
-      if (dateOpen && dateRef.current && !dateRef.current.contains(event.target as Node)) {
-        setDateOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [dropdownOpen, locationOpen, budgetOpen, dateOpen])
+export default function HomePage() {
 
-  const toggleVendor = (type: string) => {
-    setSelectedVendors(prev =>
-      prev.includes(type) ? prev.filter(v => v !== type) : [...prev, type]
-    )
-  }
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedVendor, setSelectedVendor] = useState<typeof mockVendors[0] | null>(null);
+  const router = useRouter();
 
-  const handleSearch = () => {
-    console.log({ selectedVendors, location, budget, date })
-  }
+  const openModal = (vendor: typeof mockVendors[0]) => {
+    setSelectedVendor(vendor);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedVendor(null);
+  };
 
   return (
-    <div className="relative bg-white border rounded-2xl shadow-lg px-8 py-8 max-w-4xl mx-auto w-full flex flex-wrap md:flex-nowrap items-center gap-4" style={{ minHeight: '120px' }}>
-      {/* Vendor Dropdown */}
-      <div className="relative w-full md:w-auto" style={{ minWidth: '12rem', maxWidth: '12rem' }} ref={dropdownRef}>
-        <button
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="border rounded-full px-4 py-2 w-full text-sm bg-gray-50 hover:bg-gray-100 transition text-left text-gray-900 placeholder-gray-500"
-          style={{ minWidth: '12rem', maxWidth: '12rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-        >
-          {selectedVendors.length > 0 ? `${selectedVendors.join(', ')}` : 'What do you need? (e.g. Cake, DJ…)'}
-        </button>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="bg-white">
+        <div className="container mx-auto px-4 py-2">
+          <Navbar />
+        </div>
+        <div className="w-full border-b border-border" />
+      </header>
 
-        {dropdownOpen && (
-          <div className="absolute top-full left-0 mt-2 z-20 bg-white border rounded-xl shadow-lg p-3 w-48" style={{ minWidth: '12rem' }}>
-            {VENDOR_TYPES.map((type) => (
-              <button
-                key={type}
-                onClick={() => toggleVendor(type)}
-                className={`block w-full text-left px-3 py-1.5 text-sm rounded-md mb-1 text-gray-900 hover:bg-gray-100 ${
-                  selectedVendors.includes(type)
-                    ? 'font-semibold underline'
-                    : ''
-                }`}
-                style={{ background: 'transparent' }}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Location Input */}
-      <div className="w-full md:w-auto" style={{ minWidth: '10rem', maxWidth: '10rem' }}>
-        <input
-          type="text"
-          value={location}
-          onChange={e => setLocation(e.target.value)}
-          placeholder="Where’s the party?"
-          className="border rounded-full px-4 py-2 w-full text-sm bg-gray-50 hover:bg-gray-100 transition text-left text-gray-900 placeholder-gray-900"
-          style={{ minWidth: '10rem', maxWidth: '10rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-        />
-      </div>
-
-      {/* Budget Input */}
-      <div className="w-full md:w-auto" style={{ minWidth: '8rem', maxWidth: '8rem' }}>
-        <input
-          type="number"
-          value={budget}
-          onChange={e => setBudget(e.target.value)}
-          placeholder="Budget ($)"
-          className="border rounded-full px-4 py-2 w-full text-sm bg-gray-50 hover:bg-gray-100 transition text-left text-gray-900 placeholder-gray-900"
-          style={{ minWidth: '8rem', maxWidth: '8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-        />
-      </div>
-
-      {/* Date Dropdown */}
-      <div className="relative w-full md:w-auto" style={{ minWidth: '10rem', maxWidth: '10rem' }} ref={dateRef}>
-        <button
-          onClick={() => setDateOpen(!dateOpen)}
-          className="border rounded-full px-4 py-2 w-full text-sm bg-gray-50 hover:bg-gray-100 transition text-left text-gray-900 placeholder-gray-500"
-          style={{ minWidth: '10rem', maxWidth: '10rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-        >
-          {date ? date.toLocaleDateString() : "Date"}
-        </button>
-        {dateOpen && (
-          <div className="absolute top-full left-0 mt-2 z-20 bg-white border rounded-xl shadow-lg p-3 w-56">
-            <DatePicker
-              selected={date}
-              onChange={(d: Date | null) => { setDate(d); setDateOpen(false) }}
-              inline
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Button */}
-      <button
-        onClick={handleSearch}
-        className="bg-indigo-600 text-white font-semibold px-6 py-2 rounded-full shadow hover:bg-indigo-700 transition text-sm"
-      >
-        Find Vendors
-      </button>
-    </div>
-  )
-}
-
-export default function Home() {
-  return (
-    <main className="min-h-screen w-full bg-white">
-      <section className="text-center py-16 md:py-24 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-blue-600 text-4xl font-bold">
-            Welcome to PartaiBook 🎉
-          </h1>
-          <p className="text-gray-600 mb-10 text-lg md:text-xl">
-            Plan and book life’s celebrations in minutes with AI.
+      {/* Hero Section */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto text-center">
+          <h2 className="text-5xl font-bold text-foreground mb-6">
+            Turn your <span className="text-primary">vibe</span> into a <span className="text-secondary">booked party</span>
+          </h2>
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            AI-powered event planning for all types of informal parties. 
+            Clone parties from social media and book everything in one flow.
           </p>
+          
+          {/* Search Bar */}
+          <div className="max-w-2xl mx-auto mb-8">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
+              <div className="focus-within:ring-4 focus-within:ring-primary/30 rounded-2xl transition-shadow">
+                <Input
+                  type="text"
+                  placeholder="Describe your party vibe... e.g., 'princess theme for a 5-year-old in Queens, two tiered cake, balloons, decorations, entertainment, maybe food'"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 py-6 text-sm border-2 border-border focus:border-primary focus:outline-none rounded-2xl"
+                />
+              </div>
+            </div>
+            <Button
+              className="mt-4 bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-6 text-lg"
+              onClick={() => {
+                if (searchQuery.trim()) {
+                  router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+                } else {
+                  router.push('/search');
+                }
+              }}
+            >
+              Find My Perfect Vendors
+            </Button>
+          </div>
 
-          {/* Smart Search UI */}
-          <HeroSearch />
+          {/* Feature Pills */}
+          <div className="flex flex-wrap justify-center gap-3 mb-12">
+            <Badge variant="outline" className="border-secondary text-secondary px-4 py-2 rounded-sm">
+              Instant Vendor Matches
+            </Badge>
+            <Badge variant="outline" className="border-primary text-primary px-4 py-2 rounded-sm">
+              Book Everything at Once
+            </Badge>
+            <Badge variant="outline" className="border-accent text-accent px-4 py-2 rounded-sm">
+              Trusted Local Pros
+            </Badge>
+            <Badge variant="outline" className="border-muted-foreground text-muted-foreground px-4 py-2 rounded-sm">
+              Party Planning Made Easy
+            </Badge>
+          </div>
+        </div>
+      </section>
 
-          {/* Dummy Vendor Cards */}
-          <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="rounded-2xl border p-6 shadow-lg hover:shadow-xl transition bg-white">
-                <div className="h-32 bg-gray-100 mb-4 rounded-xl" />
-                <h4 className="font-semibold text-lg">Vendor Name {i}</h4>
-                <p className="text-sm text-gray-500">DJ · $250 starting</p>
+      {/* Spotlight Vendors - User's preferred section with original website styling */}
+      <section id="vendors" className="py-16 px-4 bg-gray-100">
+        <div className="container mx-auto">
+          <h2 className="text-3xl md:text-3xl font-bold text-foreground mb-6 text-center">
+            Spotlight Vendors
+          </h2>
+
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              {mockVendors.map((vendor) => (
+                <div
+                  key={vendor.id}
+                  className="bg-card rounded-2xl border border-border shadow-md hover:shadow-lg transition p-4 flex flex-col"
+                >
+                  <h4 className="font-semibold text-base text-foreground truncate">
+                    {vendor.name}
+                  </h4>
+                  <p className="text-sm text-muted-foreground mb-2">{vendor.location}</p>
+                  <div className="relative w-full h-32 mb-3">
+                    <Image
+                      src={vendor.image}
+                      alt={vendor.name}
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-md"
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-3">
+                    {vendor.description}
+                  </p>
+                  <div className="flex justify-between items-center mt-auto">
+                    <span className="text-base font-semibold text-foreground">
+                      From ${vendor.price}
+                    </span>
+                    <Button
+                      onClick={() => openModal(vendor)} // Open modal on click
+                      className="bg-primary text-primary-foreground font-semibold py-1.5 px-4 rounded-full shadow hover:bg-primary/90 transition text-sm"
+                    >
+                      Quick View
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works - User's preferred section with adjusted heading size */}
+      <section id="how-it-works" className="w-full py-16 px-4 bg-background">
+        <div className="container mx-auto">
+          <h2 className="text-3xl md:text-3xl font-bold text-center text-foreground mb-12 font-sans drop-shadow-sm">
+            How It Works
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-16 max-w-6xl mx-auto px-4">
+            {[
+              {
+                icon: '🎈', // Using a more relevant emoji for 'vibe'
+                title: '1. Describe your vibe',
+                desc: `Throwing a birthday? Baby shower? Graduation bash? Just drop your vibe, date, location – even your budget. That's it. We'll understand your vision instantly.`,
+              },
+              {
+                icon: '⚡',
+                title: '2. Get instant matches',
+                desc: `Our AI finds the perfect local vendors who match your preferences, instantly showing who's available so you can browse and book your party in minutes. No waiting, no chasing.`,
+              },
+              {
+                icon: '🗓️',
+                title: '3. Book, chat and track',
+                desc: `Add multiple vendors to your cart and book your entire party in one seamless flow. Chat to vendors when you want, send inspo, and organise events in one, intuitive hub.`,
+              },
+            ].map((step, idx) => (
+              <div key={idx} className="text-center">
+                <div className="flex justify-center mb-4">
+                  <span className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-accent text-3xl">
+                    {step.icon}
+                  </span>
+                </div>
+                <h3 className="text-[22px] font-semibold mb-5 text-foreground">{step.title}</h3>
+                <p className="text-[16px] text-muted-foreground leading-relaxed">{step.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="w-full py-20 px-6 bg-gray-50">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-indigo-600 mb-12">
-          How It Works
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto px-4">
-          <div className="text-center">
-            <h3 className="text-xl font-semibold mb-3">🎈 1. Tell us your vibe</h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Throwing a birthday? Baby shower? Graduation bash? Just drop your vibe, date, location – and your budget. That’s it. Let the magic begin.
-            </p>
-          </div>
-          <div className="text-center">
-            <h3 className="text-xl font-semibold mb-3">⚡ 2. Get instant matches</h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Our AI searches live availability to instantly build you a dream team of vendors – decorators, venues, bakers & more. No waiting. No ghosting.
-            </p>
-          </div>
-          <div className="text-center">
-            <h3 className="text-xl font-semibold mb-3">🪄 3. Book, chat and track</h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Book with one tap. Chat directly with vendors. And if someone cancels? The AI auto-finds a replacement or sorts your refund. Zero last-minute stress.
-            </p>
+      {/* CTA Section */}
+      <section className="py-16 px-4 bg-gradient-to-r from-primary to-secondary">
+        <div className="container mx-auto text-center">
+          <h3 className="text-3xl font-bold text-white mb-4">Ready to throw an unforgettable party?</h3>
+          <p className="text-xl text-white/90 mb-8">Join thousands of party planners who&apos;ve discovered the magic of AI-powered event planning.</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90">
+              Start Planning Now
+            </Button>
+            <Button size="lg" variant="outline" className="border-white text-primary hover:bg-white hover:text-primary">
+              Watch Demo
+            </Button>
           </div>
         </div>
       </section>
-    </main>
-  )
+
+      {/* Vendor Modal */}
+      {isModalOpen && selectedVendor && (
+        <VendorModal
+          vendor={selectedVendor}
+          isOpen={isModalOpen}
+          onClose={closeModal}
+        />
+      )}
+
+      {/* Footer */}
+      <footer className="py-12 px-4 bg-muted">
+        <div className="container mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center space-x-2 mb-4 md:mb-0">
+              <Sparkles className="h-6 w-6 text-primary" />
+              <span className="text-lg font-semibold text-foreground">PartaiBook</span>
+            </div>
+            <div className="flex space-x-6">
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Privacy</a>
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Terms</a>
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Support</a>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-border text-center text-muted-foreground">
+            <p>&copy; 2025 PartaiBook. All rights reserved. Powered by AI, built for real life.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }
-/* --- END ORIGINAL page.tsx --- */

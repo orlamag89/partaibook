@@ -1,0 +1,173 @@
+/* Airbnb-style Calendar Styles */
+
+.airbnb-calendar-wrapper {
+  padding: 16px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.airbnb-calendar .rdrCalendarWrapper {
+  color: #000;
+  background-color: #fff;
+  border: none;
+  box-shadow: none;
+  user-select: none;
+  width: auto;
+}
+
+.airbnb-calendar .rdrMonthAndYearWrapper {
+  padding-top: 0;
+  padding-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.airbnb-calendar .rdrMonthAndYearPickers {
+  display: none !important; /* Remove dropdowns */
+}
+
+.airbnb-calendar .rdrWeekDays {
+  padding: 0 16px;
+}
+
+.airbnb-calendar .rdrWeekDay {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.airbnb-calendar .rdrMonths {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 32px;
+}
+
+.airbnb-calendar .rdrMonth {
+  width: 300px;
+  padding: 0;
+}
+
+.airbnb-calendar .rdrMonthName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.airbnb-calendar .rdrDays {
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.airbnb-calendar .rdrDay {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.airbnb-calendar .rdrDayNumber {
+  font-size: 14px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+/* Normal day text */
+.airbnb-calendar .rdrDay:not(.rdrDayPassive) .rdrDayNumber span {
+  color: #000;
+}
+
+/* Passive (out of range) dates */
+.airbnb-calendar .rdrDayPassive .rdrDayNumber span {
+  color: #d1d5db;
+}
+
+/* Hover effect */
+.airbnb-calendar .rdrDay:not(.rdrDayPassive):not(.rdrDayDisabled) .rdrDayNumber:hover {
+  background-color: #f3f4f6;
+}
+
+/* TODAY styles */
+.airbnb-calendar .rdrDayToday .rdrDayNumber {
+  border: none !important;
+  background-color: transparent !important;
+}
+
+.airbnb-calendar .rdrDayToday .rdrDayNumber span {
+  font-weight: 600;
+  color: #000 !important;
+}
+
+.airbnb-calendar .rdrDayToday .rdrDayNumber:after {
+  content: none !important;
+}
+
+/* SELECTED DAY styles – one black circle only */
+.airbnb-calendar .rdrDay.rdrDayActive .rdrDayNumber {
+  background-color: transparent;
+  border: 2px solid #000;
+}
+
+.airbnb-calendar .rdrDay.rdrDayActive .rdrDayNumber span {
+  color: #000;
+}
+
+/* Remove blue fill on ranges (we don't use ranges anyway) */
+.airbnb-calendar .rdrStartEdge,
+.airbnb-calendar .rdrEndEdge,
+.airbnb-calendar .rdrInRange,
+.airbnb-calendar .rdrDayStart,
+.airbnb-calendar .rdrDayEnd,
+.airbnb-calendar .rdrDayInBetween,
+.airbnb-calendar .rdrSelected,
+.airbnb-calendar .rdrDayStartPreview,
+.airbnb-calendar .rdrDayEndPreview,
+.airbnb-calendar .rdrDayInPreview {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+/* Arrow buttons styling */
+.airbnb-calendar .rdrPprevButton,
+.airbnb-calendar .rdrNextButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  font-size: 24px;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.airbnb-calendar .rdrPprevButton {
+  left: -40px;
+}
+
+.airbnb-calendar .rdrNextButton {
+  right: -40px;
+}
+
+.airbnb-calendar .rdrPprevButton::before {
+  content: "\2039"; /* ‹ */
+  color: #000;
+}
+
+.airbnb-calendar .rdrNextButton::before {
+  content: "\203A"; /* › */
+  color: #000;
+}

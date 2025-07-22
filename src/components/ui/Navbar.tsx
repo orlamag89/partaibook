@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Sparkles } from 'lucide-react';
 import { useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import DatePicker from 'react-datepicker'
@@ -40,9 +41,12 @@ export default function Navbar() {
   }, [searchParams, setLocation, setBudget, setVibe, setDate])
 
   return (
-    <nav className="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
-      <Link href="/" className="text-2xl font-bold text-indigo-600 tracking-tight">
-        PartaiBook
+    <nav className="w-full bg-white sticky top-0 z-50">
+      <div className="container mx-auto px-4 py-2 flex items-center justify-between">
+      {/* Brand: Sparkles icon is 1.5rem (24px), text is 1.5rem (24px) bold */}
+      <Link href="/" className="flex items-center space-x-2 font-bold text-foreground font-sans tracking-tight -ml-8">
+        <Sparkles className="h-8 w-8 text-primary" />
+        <span style={{ fontSize: '26px' }}>PartaiBook</span>
       </Link>
 
       {pathname === '/search' && (
@@ -89,7 +93,7 @@ export default function Navbar() {
         </div>
       )}
 
-      <div className="flex gap-4 items-center">
+      <div className="flex gap-1 items-center mr-[-32px]">
         {pathname !== '/search' && (
           <button
             onClick={() => {
@@ -98,13 +102,19 @@ export default function Navbar() {
                 section.scrollIntoView({ behavior: 'smooth' })
               }
             }}
-            className="text-sm font-medium text-gray-700 hover:text-blue-500 transition bg-transparent px-2 py-1 rounded focus:outline-none"
+            className="text-base font-normal text-foreground hover:text-primary transition bg-transparent px-4 py-2 rounded focus:outline-none font-sans mr-2"
           >
-            How it Works
+            How it works
           </button>
         )}
-        <HamburgerDrawer />
+        <div className="ml-1">
+          <button className="bg-primary hover:bg-primary/90 transition-colors rounded-sm p-2 flex items-center justify-center" aria-label="Open menu">
+            <HamburgerDrawer className="text-white" />
+          </button>
+        </div>
       </div>
+      </div>
+      {/* border line removed, now handled in page.tsx */}
     </nav>
   )
 }
