@@ -1,14 +1,17 @@
+
 import { supabase } from '@/lib/supabaseClient'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 
-
-export default async function VendorProfile({ params }: { params: { id: string } }) {
+export default async function VendorProfile({ params }: { params?: Promise<{ id: string }> }) {
+  // Await params if it's a Promise (Next.js 15 app dir expects this)
+  const resolvedParams = params ? await params : { id: '' };
+  const id = resolvedParams.id;
   const { data, error } = await supabase
     .from('vendors')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (error || !data) return notFound()
