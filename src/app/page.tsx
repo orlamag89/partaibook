@@ -198,12 +198,12 @@ export default function HomePage() {
                 {
                   icon: '⚡',
                   title: '2. Get instant matches',
-                  desc: `Our AI finds verified local vendors who match your needs and are actually available nearby so you can browse through options and book fast. No waiting, no chasing, no guesswork.`,
+                  desc: `Our AI finds verified vendors who match your needs and are actually available nearby so you can browse through options and make your pick. No waiting, no chasing.`,
                 },
                 {
                   icon: '🎉',
                   title: '3. Book, chat and track',
-                  desc: `Add multiple vendors to your cart and book your entire party in one seamless flow. Chat with vendors, send inspo, and track everything in one stress-free hub.`,
+                  desc: `Add as many vendors as you need to your cart and book your entire party in one seamless flow. Chat with vendors, send inspo, and track it all in one stress-free hub.`,
                 },
               ].map((step, idx) => (
                 <div key={idx} className="text-center">
