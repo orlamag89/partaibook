@@ -198,7 +198,7 @@ export default function HomePage() {
                 {
                   icon: '⚡',
                   title: '2. Get instant matches',
-                  desc: `Our AI finds the perfect local vendors who match your preferences and are actually available so you can browse and book your party in minutes. No waiting, no chasing.`,
+                  desc: `Our AI finds verified local vendors who match your needs and are actually available nearby so you can browse through options and book fast. No waiting, no chasing, no guesswork.`,
                 },
                 {
                   icon: '🎉',
