@@ -3,12 +3,17 @@
 import { Dialog } from '@headlessui/react'
 import { useState } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { useLoginModal } from '@/context/LoginModalContext'
+// Removed useLoginModal import; props will be passed in
 import { supabase } from '@/lib/supabaseClient'
 import Image from 'next/image'
 
-export default function LoginModal() {
-const { isOpen, close } = useLoginModal()
+
+type LoginModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -43,7 +48,7 @@ const { isOpen, close } = useLoginModal()
       if (isSigningUp) {
         setMessage('Check your inbox to confirm your email.')
       } else {
-        close()
+        onClose()
       } 
       
     } catch (err) {
@@ -63,12 +68,12 @@ const { isOpen, close } = useLoginModal()
   }
 
   return (
-    <Dialog open={isOpen} onClose={close} className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center bg-black/50 p-4">
+    <Dialog open={isOpen} onClose={onClose} className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex min-h-screen items-center justify-center bg-black/20 p-4">
         <Dialog.Panel className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
           {/* Close Button */}
           <button
-            onClick={close}
+            onClick={onClose}
             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-transparent p-0 border-none"
             style={{ background: 'transparent', boxShadow: 'none' }}
           >
@@ -77,18 +82,19 @@ const { isOpen, close } = useLoginModal()
 
           {/* Headings */}
           <Dialog.Title className="text-3xl font-bold text-center mb-1">
-            Welcome to <span className="text-indigo-600">PartaiBook</span>
+            Welcome to <span style={{ color: '#2c3e50' }}>PartaiBook</span>
           </Dialog.Title>
           <p className="text-center text-sm text-gray-500 mb-6">
             {isSigningUp ? 'Create an account to get started' : 'Log in to continue'}
           </p>
 
           {/* Form */}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <input
               type="email"
               placeholder="Email"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -96,7 +102,7 @@ const { isOpen, close } = useLoginModal()
             <input
               type="password"
               placeholder="Password"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -108,7 +114,7 @@ const { isOpen, close } = useLoginModal()
 
             <button
               type="submit"
-              className="w-full bg-white text-indigo-600 py-2 rounded-lg border border-indigo-600 hover:bg-gray-100 transition font-semibold"
+              className="w-full bg-primary text-white py-2 rounded-lg border border-primary hover:bg-primary/90 transition font-semibold"
             >
               {isSigningUp ? 'Sign Up' : 'Continue'}
             </button>
@@ -117,7 +123,7 @@ const { isOpen, close } = useLoginModal()
           {/* Toggle Mode */}
           <p className="text-center text-sm mt-4">
             {isSigningUp ? 'Already have an account?' : 'Don’t have an account?'}{' '}
-            <button onClick={toggleMode} className="text-indigo-600 hover:underline bg-transparent p-0 border-none" style={{ background: 'transparent', boxShadow: 'none', color: '#2563eb' }}>
+            <button onClick={toggleMode} className="bg-transparent p-0 border-none transition-colors font-semibold" style={{ background: 'transparent', boxShadow: 'none', color: '#a78bfa' }}>
               {isSigningUp ? 'Log in' : 'Sign up'}
             </button>
           </p>
@@ -132,15 +138,15 @@ const { isOpen, close } = useLoginModal()
           {/* Google Auth Button */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full border border-gray-300 rounded-lg py-2 hover:bg-blue-50 flex justify-center items-center gap-2 transition bg-white text-gray-700 font-medium"
+            className="w-full border border-gray-300 rounded-lg py-2 hover:bg-primary/10 flex justify-center items-center gap-2 transition bg-white text-foreground font-medium"
           >
             <Image
-  src="https://www.svgrepo.com/show/475656/google-color.svg"
-  alt="Google"
-  width={20}
-  height={20}
-  className="h-5 w-5"
-/>
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google"
+              width={20}
+              height={20}
+              className="h-5 w-5"
+            />
             Continue with Google
           </button>
         </Dialog.Panel>

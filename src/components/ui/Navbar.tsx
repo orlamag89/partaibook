@@ -41,8 +41,7 @@ export default function Navbar() {
   }, [searchParams, setLocation, setBudget, setVibe, setDate])
 
   return (
-    <nav className="w-full bg-white sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-2 flex items-center justify-between">
+    <nav className="w-full bg-background sticky top-0 z-50 py-1 flex items-center justify-between px-4">
       {/* Brand: Sparkles icon is 1.5rem (24px), text is 1.5rem (24px) bold */}
       <Link href="/" className="flex items-center space-x-2 font-bold text-foreground font-sans tracking-tight -ml-8">
         <Sparkles className="h-8 w-8 text-primary" />
@@ -108,11 +107,8 @@ export default function Navbar() {
           </button>
         )}
         <div className="ml-1">
-          <button className="bg-primary hover:bg-primary/90 transition-colors rounded-sm p-2 flex items-center justify-center" aria-label="Open menu">
-            <HamburgerDrawer className="text-white" />
-          </button>
+          <HamburgerDrawer className="text-white bg-primary hover:bg-primary/90 transition-colors rounded-sm p-2 flex items-center justify-center" aria-label="Open menu" />
         </div>
-      </div>
       </div>
       {/* border line removed, now handled in page.tsx */}
     </nav>

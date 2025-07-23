@@ -78,7 +78,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white">
+      <header className="bg-background">
         <div className="container mx-auto px-4 py-2">
           <Navbar />
         </div>
@@ -89,24 +89,23 @@ export default function HomePage() {
       <section className="py-16 px-4">
         <div className="container mx-auto text-center">
           <h2 className="text-5xl font-bold text-foreground mb-6">
-            Turn your <span className="text-primary">vibe</span> into a <span className="text-secondary">booked party</span>
+            Finally, party planning that <span className="text-secondary">doesn&apos;t suck</span>
           </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            AI-powered event planning for all types of informal parties. 
-            Clone parties from social media and book everything in one flow.
+          <p className="text-muted-foreground mb-8 max-w-2xl mx-auto" style={{ fontSize: '20px' }}>
+            The smart way to book birthdays and celebrations. Our AI matches your vision to available local vendors, taking you from planned to booked in minutes - not weeks. We handle the chaos, you throw the party.
           </p>
           
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto mb-8">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
-              <div className="focus-within:ring-4 focus-within:ring-primary/30 rounded-2xl transition-shadow">
+              <div className="focus-within:ring-4 focus-within:ring-primary/30 rounded-sm transition-shadow">
                 <Input
                   type="text"
                   placeholder="Describe your party vibe... e.g., 'princess theme for a 5-year-old in Queens, two tiered cake, balloons, decorations, entertainment, maybe food'"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 py-6 text-sm border-2 border-border focus:border-primary focus:outline-none rounded-2xl"
+                  className="pl-12 py-6 text-sm border-2 border-border focus:border-primary focus:outline-none rounded-sm"
                 />
               </div>
             </div>
@@ -130,20 +129,20 @@ export default function HomePage() {
               Instant Vendor Matches
             </Badge>
             <Badge variant="outline" className="border-primary text-primary px-4 py-2 rounded-sm">
-              Book Everything at Once
+              No More Ghosting
             </Badge>
             <Badge variant="outline" className="border-accent text-accent px-4 py-2 rounded-sm">
               Trusted Local Pros
             </Badge>
             <Badge variant="outline" className="border-muted-foreground text-muted-foreground px-4 py-2 rounded-sm">
-              Party Planning Made Easy
+              Book Everything at Once
             </Badge>
           </div>
         </div>
       </section>
 
       {/* Spotlight Vendors - User's preferred section with original website styling */}
-      <section id="vendors" className="py-16 px-4 bg-gray-100">
+      <section id="vendors" className="py-16 px-4" style={{ backgroundColor: '#ECEEF0' }}>
         <div className="container mx-auto">
           <h2 className="text-3xl md:text-3xl font-bold text-foreground mb-6 text-center">
             Spotlight Vendors
@@ -194,14 +193,14 @@ export default function HomePage() {
       <section id="how-it-works" className="w-full py-16 px-4 bg-background">
         <div className="container mx-auto">
           <h2 className="text-3xl md:text-3xl font-bold text-center text-foreground mb-12 font-sans drop-shadow-sm">
-            How It Works
+            How PartaiBook Works
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-16 max-w-6xl mx-auto px-4">
             {[
               {
                 icon: '🎈', // Using a more relevant emoji for 'vibe'
                 title: '1. Describe your vibe',
-                desc: `Throwing a birthday? Baby shower? Graduation bash? Just drop your vibe, date, location – even your budget. That's it. We'll understand your vision instantly.`,
+                desc: `Throwing a birthday? Baby shower? Graduation bash? Just drop your vibe, date, location – even your budget. We'll understand your vision instantly.`,
               },
               {
                 icon: '⚡',

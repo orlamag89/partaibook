@@ -10,7 +10,7 @@ module.exports = {
     extend: {
       colors: {
         // Defined using hex values directly for simplicity and direct mapping to user request
-        background: "#FFFFFF", // White background
+        background: "#FAFAFA", // Off-white background
         foreground: "#2c3e50", // Main text color
         primary: {
           DEFAULT: "#00cba7", // Energetic Teal
@@ -21,7 +21,7 @@ module.exports = {
           foreground: "#FFFFFF", // White text on secondary
         },
         accent: {
-          DEFAULT: "#ff8c42", // Warm Sunset Orange
+          DEFAULT: "#FF8C42", // Warm Sunset Orange
           foreground: "#FFFFFF", // White text on accent
         },
         muted: {

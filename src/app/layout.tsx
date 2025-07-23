@@ -1,6 +1,7 @@
 import './globals.css'
 import { SearchProvider } from '@/context/SearchContext'
 import { LoginModalProvider } from '@/context/LoginModalContext'
+import LoginModalWrapper from '@/components/modals/LoginModalWrapper'
 
 export const metadata = {
   title: 'PartaiBook | AI Party Planner',
@@ -13,7 +14,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <LoginModalProvider>
           <SearchProvider>
-            {children}
+                <LoginModalWrapper />
+                {children}
           </SearchProvider>
         </LoginModalProvider>
       </body>
