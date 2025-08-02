@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 
 interface AirbnbCalendarProps {
-  value: Date | null;
-  onChange: (date: Date) => void;
+  value: Date[];
+  onChange: (dates: Date[]) => void;
   minDate?: Date;
 }
 
 const AirbnbCalendar: React.FC<AirbnbCalendarProps> = ({ value, onChange, minDate }) => {
-  const [currentMonth, setCurrentMonth] = useState<Date>(value || new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(value && value.length > 0 ? value[0] : new Date());
   const today = new Date();
   
   const monthNames = [
@@ -15,7 +15,7 @@ const AirbnbCalendar: React.FC<AirbnbCalendarProps> = ({ value, onChange, minDat
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
   
-  const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  const dayNames = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
   
   const getDaysInMonth = (date: Date): (Date | null)[] => {
     const year = date.getFullYear();
@@ -42,7 +42,7 @@ const AirbnbCalendar: React.FC<AirbnbCalendarProps> = ({ value, onChange, minDat
   
   const isDateSelected = (date: Date | null): boolean => {
     if (!value || !date) return false;
-    return date.toDateString() === value.toDateString();
+    return value.some((d) => d.toDateString() === date.toDateString());
   };
   
   const isDateToday = (date: Date | null): boolean => {
@@ -55,13 +55,23 @@ const AirbnbCalendar: React.FC<AirbnbCalendarProps> = ({ value, onChange, minDat
     return date < minDate;
   };
   
-  const handleDateClick = (date: Date | null): void => {
+  const handleDateClick = (date: Date | null, e: React.MouseEvent): void => {
+    e.stopPropagation();
     if (date && !isDateDisabled(date)) {
-      onChange(date);
+      let newDates: Date[];
+      if (isDateSelected(date)) {
+        // Remove date
+        newDates = value.filter((d) => d.toDateString() !== date.toDateString());
+      } else {
+        // Add date
+        newDates = [...value, date];
+      }
+      onChange(newDates);
     }
   };
   
-  const navigateMonth = (direction: number): void => {
+  const navigateMonth = (direction: number, e: React.MouseEvent): void => {
+    e.stopPropagation();
     const newMonth = new Date(currentMonth);
     newMonth.setMonth(newMonth.getMonth() + direction);
     setCurrentMonth(newMonth);
@@ -97,7 +107,7 @@ const AirbnbCalendar: React.FC<AirbnbCalendarProps> = ({ value, onChange, minDat
               } ${date && isDateToday(date) ? 'today' : ''} ${
                 date && isDateDisabled(date) ? 'disabled' : ''
               }`}
-              onClick={() => handleDateClick(date)}
+              onClick={(e) => handleDateClick(date, e)}
             >
               {date && (
                 <span className="day-number">
@@ -249,14 +259,14 @@ const AirbnbCalendar: React.FC<AirbnbCalendarProps> = ({ value, onChange, minDat
         <div className="calendar-header">
           <button
             className="nav-button prev"
-            onClick={() => navigateMonth(-1)}
+            onClick={(e) => navigateMonth(-1, e)}
             type="button"
           >
             ‹
           </button>
           <button
             className="nav-button next"
-            onClick={() => navigateMonth(1)}
+            onClick={(e) => navigateMonth(1, e)}
             type="button"
           >
             ›

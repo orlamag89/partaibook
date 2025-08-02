@@ -2,10 +2,11 @@
 
 import { Dialog } from '@headlessui/react'
 import { useState } from 'react'
+import { XMarkIcon as XIcon, CheckIcon } from '@heroicons/react/24/solid'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 // Removed useLoginModal import; props will be passed in
-import { supabase } from '@/lib/supabaseClient'
 import Image from 'next/image'
+
 
 
 type LoginModalProps = {
@@ -14,12 +15,33 @@ type LoginModalProps = {
 };
 
 export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
-
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [isSigningUp, setIsSigningUp] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [passwordFocused, setPasswordFocused] = useState(false)
+
+  // Password requirements logic (must be after state)
+  const passwordRequirements = [
+    {
+      label: "At least 8 characters",
+      met: password.length >= 8,
+    },
+    {
+      label: "Contains a number or symbol",
+      met: /[0-9!@#$%^&*()_+\-\=\[\]{};':"\\|,.<>/?]/.test(password),
+    },
+    {
+      label: "Can't contain your name or email address",
+      met: email.length === 0 || (
+        password &&
+        !password.toLowerCase().includes(email.toLowerCase().split('@')[0]) &&
+        !password.toLowerCase().includes(email.toLowerCase())
+      ),
+    },
+  ];
 
   const toggleMode = () => {
     setIsSigningUp(!isSigningUp)
@@ -81,10 +103,10 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
           </button>
 
           {/* Headings */}
-          <Dialog.Title className="text-3xl font-bold text-center mb-1">
-            Welcome to <span style={{ color: '#2c3e50' }}>PartaiBook</span>
+          <Dialog.Title className="text-3xl font-medium text-center mb-1" style={{ color: '#222222' }}>
+            Welcome to <span style={{ color: '#222222' }}>PartaiBook</span>
           </Dialog.Title>
-          <p className="text-center text-sm text-gray-500 mb-6">
+          <p className="text-center text-sm mb-6" style={{ color: '#222222' }}>
             {isSigningUp ? 'Create an account to get started' : 'Log in to continue'}
           </p>
 
@@ -99,14 +121,54 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-            <input
-              type="password"
-              placeholder="Password"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Password"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary pr-16"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                onFocus={() => setPasswordFocused(true)}
+                onBlur={() => setPasswordFocused(false)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-black px-2 py-1 rounded focus:outline-none"
+                tabIndex={-1}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+
+            {/* Password requirements */}
+            {isSigningUp && passwordFocused && (
+              <div className="mt-1 mb-0">
+                <div className="text-[12px] font-medium mb-0 text-gray-700 flex items-center gap-2">
+                  Password strength:
+                  {passwordRequirements.every(req => req.met) ? (
+                    <span className="font-medium" style={{ color: '#10B981' }}>good</span>
+                  ) : (
+                    <span className="font-medium" style={{ color: '#D93900' }}>weak</span>
+                  )}
+                </div>
+                <ul className="space-y-0">
+                  {passwordRequirements.map((req, idx) => (
+                    <li key={idx} className="flex items-center gap-1">
+                      {req.met ? (
+                        <CheckIcon className="w-3.5 h-3.5" style={{ color: '#10B981' }} />
+                      ) : (
+                        <XIcon className="w-3.5 h-3.5" style={{ color: '#D93900' }} />
+                      )}
+                      <span className={req.met ? "text-[12px] font-medium" : "text-[12px] font-medium"} style={{ color: req.met ? '#10B981' : '#D93900' }}>{req.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Error/Message */}
             {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -121,7 +183,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
           </form>
 
           {/* Toggle Mode */}
-          <p className="text-center text-sm mt-4">
+          <p className="text-center text-sm mt-4" style={{ color: '#222222' }}>
             {isSigningUp ? 'Already have an account?' : 'Don’t have an account?'}{' '}
             <button onClick={toggleMode} className="bg-transparent p-0 border-none transition-colors font-semibold" style={{ background: 'transparent', boxShadow: 'none', color: '#a78bfa' }}>
               {isSigningUp ? 'Log in' : 'Sign up'}

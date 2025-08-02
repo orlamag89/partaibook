@@ -1,6 +1,11 @@
+
 'use client'
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import { createClient } from '@supabase/supabase-js';
+// Or import your shared client if you have one:
+// import supabase from '@/lib/supabaseClient';
+
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
 export default function Dashboard() {
   const [userEmail, setUserEmail] = useState<string | null>(null)

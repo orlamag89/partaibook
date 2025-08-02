@@ -1,47 +1,42 @@
+"use client";
 
-import { supabase } from '@/lib/supabaseClient'
-import { notFound } from 'next/navigation'
-import Link from 'next/link'
-import Image from 'next/image'
+import { useState } from 'react';
+import Image from 'next/image';
 
-export default async function VendorProfile({ params }: { params?: Promise<{ id: string }> }) {
-  // Await params if it's a Promise (Next.js 15 app dir expects this)
-  const resolvedParams = params ? await params : { id: '' };
-  const id = resolvedParams.id;
-  const { data, error } = await supabase
-    .from('vendors')
-    .select('*')
-    .eq('id', id)
-    .single()
+export default function VendorProfile() {
+  type Vendor = {
+    id: string;
+    name: string;
+    location: string;
+    price: string;
+    image_url?: string | string[];
+    video_url?: string;
+    date?: string;
+    price_category?: string;
+    // Add more fields as needed, e.g. description, category, etc.
+  };
+  const [vendor] = useState<Vendor | null>(null);
+  // Fallbacks and missing variable definitions
+  const images = vendor?.image_url
+    ? Array.isArray(vendor.image_url)
+      ? vendor.image_url
+      : [vendor.image_url]
+    : [];
 
-  if (error || !data) return notFound()
-
+  // Example minimal JSX return block
   return (
-    <div className="p-8 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold mb-2">{data.name}</h1>
-      <p className="text-gray-600 text-sm mb-1 capitalize">
-        {data.service_type} in {data.location}
-      </p>
-      <p className="text-gray-800 text-base mt-4">{data.about_your_business}</p>
-      <p className="text-lg font-semibold mt-6">Price: ${data.price}</p>
-      <p className="text-sm text-gray-500 mt-2">Contact: {data.email}</p>
-
-      {data.image_url && (
-        <Image
-          src={data.image_url}
-          alt={`Image of ${data.name}`}
-          width={600}
-          height={400}
-          className="mt-6 w-full rounded-md shadow-md object-cover"
-        />
-      )}
-
-      <Link
-        href={`/vendors/${data.id}/book`}
-        className="inline-block mt-8 bg-indigo-600 text-white px-5 py-2 rounded hover:bg-indigo-700 transition"
-      >
-        Book This Vendor
-      </Link>
+    <div>
+      <h1>Vendor Profile</h1>
+      <div>
+        {images.length > 0 ? (
+          images.map((img, idx) => (
+            <Image key={idx} src={img || '/api/placeholder/300/200'} alt={`Vendor image ${idx + 1}`} width={300} height={200} />
+          ))
+        ) : (
+          <p>No images available.</p>
+        )}
+      </div>
+      {/* Add more vendor info and UI here as needed */}
     </div>
-  )
+  );
 }

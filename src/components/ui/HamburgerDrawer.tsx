@@ -3,20 +3,24 @@
 import { Dialog } from '@headlessui/react'
 import { useLoginModal } from '@/context/LoginModalContext'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { Ref } from 'react'
 
-export default function HamburgerDrawer({ className = "" }: { className?: string }) {
-  const { open } = useLoginModal()
-  const [isOpen, setIsOpen] = useState(false)
 
-  const openDrawer = () => setIsOpen(true)
-  const closeDrawer = () => setIsOpen(false)
+interface HamburgerDrawerProps {
+  className?: string;
+  drawerRef?: Ref<HTMLDivElement>;
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+export default function HamburgerDrawer({ className = "", drawerRef, isOpen, onToggle }: HamburgerDrawerProps) {
+  const { open } = useLoginModal();
 
   return (
     <>
       {/* Hamburger + Account Icon */}
       <button
-        onClick={openDrawer}
+        onClick={onToggle}
         className={`group flex items-center gap-2 focus:outline-none bg-primary hover:bg-primary/90 transition-colors rounded-full px-4 py-2 ${className}`}
         aria-label="Open menu"
       >
@@ -32,14 +36,15 @@ export default function HamburgerDrawer({ className = "" }: { className?: string
       </button>
 
       {/* Drawer */}
-      <Dialog open={isOpen} onClose={closeDrawer} className="fixed inset-0 z-50">
+      <Dialog open={isOpen} onClose={onToggle} className="fixed inset-0 z-50">
         {/* No overlay, modal only */}
         <div
+          ref={drawerRef}
           className="fixed top-4 right-4 w-64 bg-white rounded-xl shadow-xl p-6 z-50"
           onClick={e => e.stopPropagation()}
         >
           <button
-            onClick={closeDrawer}
+            onClick={onToggle}
             className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 bg-transparent p-0 border-none"
             style={{ background: 'transparent', boxShadow: 'none' }}
           >
@@ -49,8 +54,8 @@ export default function HamburgerDrawer({ className = "" }: { className?: string
           <div className="space-y-4 pt-4">
             <button
               onClick={() => {
-                closeDrawer()
-                open()
+                onToggle();
+                open();
               }}
               className="block text-base font-normal text-foreground hover:text-primary transition bg-transparent p-0 border-none focus:outline-none font-sans"
               style={{ background: 'transparent', boxShadow: 'none' }}
@@ -58,13 +63,16 @@ export default function HamburgerDrawer({ className = "" }: { className?: string
               Log in or Sign up
             </button>
 
-            <a
-              href="/vendor-signup"
+            <button
+              onClick={() => {
+                onToggle();
+                open();
+              }}
               className="block text-base font-normal text-foreground hover:text-primary transition bg-transparent p-0 border-none focus:outline-none font-sans"
               style={{ background: 'transparent', boxShadow: 'none' }}
             >
               Become a Vendor
-            </a>
+            </button>
 
             <a
               href="/help"
@@ -77,5 +85,5 @@ export default function HamburgerDrawer({ className = "" }: { className?: string
         </div>
       </Dialog>
     </>
-  )
+  );
 }

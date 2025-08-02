@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+import { createClient } from "@supabase/supabase-js";
+
 
 export default function BookVendor() {
   const router = useRouter()
@@ -17,6 +18,11 @@ export default function BookVendor() {
     event_type: '',
     message: '',
   })
+
+  const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)

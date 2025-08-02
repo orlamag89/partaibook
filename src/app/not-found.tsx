@@ -7,7 +7,7 @@ export default function NotFoundPage() {
       <p className="text-gray-600 mb-6">Sorry, we couldn’t find the page you’re looking for.</p>
       <Link
         href="/"
-        className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+        className="px-4 py-2 bg-[#A78BFA] text-white rounded hover:bg-[#7C5DD6] transition"
       >
         Go Home
       </Link>

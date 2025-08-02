@@ -1,11 +1,21 @@
-input:focus, input:active {
+/* Global CSS variables for theme */
+:root {
+  --background-color: #f9f9f9;
+  --border-color: #e5e7eb;
+  --text-color: #222;
+  --subtext-color: #666;
+  --primary: #2563eb;
+  --error: #dc2626;
+}
+input:focus,
+input:active {
   outline: none !important;
   box-shadow: none !important;
 }
 input:-webkit-autofill {
-  box-shadow: 0 0 0 1000px white inset !important;
-  -webkit-box-shadow: 0 0 0 1000px white inset !important;
-  -webkit-text-fill-color: inherit !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--background) inset !important;
+  box-shadow: 0 0 0 1000px var(--background) inset !important;
+  -webkit-text-fill-color: var(--foreground) !important;
 }
 @tailwind base;
 @tailwind components;
@@ -128,11 +138,49 @@ input:-webkit-autofill {
   }
 }
 
-
 .input-focus-effect:focus {
+  outline: none;
+  border-color: var(--dark-green-focus);
+  box-shadow: 0 0 0 3px var(--dark-green-focus), 0 0 0 6px var(--primary);
+  transition: all 0.2s ease;
+}
+
+.airbnb-calendar .day-cell.has-date:not(.disabled) .day-number:focus {
   outline: none;
   border-color: var(--dark-green-focus);
   box-shadow: 0 0 0 3px var(--dark-green-focus), 0 0 0 6px var(--primary);
 }
 
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
 
+.airbnb-calendar-wrapper {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .navbar-logo span {
+    display: none;
+  }
+  .navbar-search {
+    max-width: 150px;
+  }
+  .vendor-card {
+    width: calc(100%/2 - 8px); /* Adjust for mobile */
+  }
+}

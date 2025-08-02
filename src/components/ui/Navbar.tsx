@@ -1,18 +1,35 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { Sparkles } from 'lucide-react';
-import { useEffect } from 'react'
-import { usePathname, useSearchParams } from 'next/navigation'
-import DatePicker from 'react-datepicker'
-import HamburgerDrawer from '@/components/ui/HamburgerDrawer'
-import 'react-datepicker/dist/react-datepicker.css'
-import '@/app/datepicker.css'
-import { useSearchContext } from '@/context/SearchContext'
+import Link from "next/link";
+import { Sparkles } from "lucide-react";
+import { useEffect } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import DatePicker from "react-datepicker";
+import HamburgerDrawer from "@/components/ui/HamburgerDrawer";
+import { useRef, useState } from "react";
+import "react-datepicker/dist/react-datepicker.css";
+import "@/app/datepicker.css";
+import { useSearchContext } from "@/context/SearchContext";
 
 export default function Navbar() {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
+  const hamburgerRef = useRef<HTMLDivElement>(null);
+  const hamburgerDrawerRef = useRef<HTMLDivElement>(null);
+  // Outside click detection for hamburger drawer
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      const isHamburger = hamburgerRef.current && hamburgerRef.current.contains(target);
+      const isHamburgerDrawer = hamburgerDrawerRef.current && hamburgerDrawerRef.current.contains(target);
+      if (isHamburgerOpen && !isHamburgerDrawer && !isHamburger) {
+        setIsHamburgerOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isHamburgerOpen]);
 
   const {
     location,
@@ -24,36 +41,39 @@ export default function Navbar() {
     date,
     setDate,
     handleSearch,
-  } = useSearchContext()
+  } = useSearchContext();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  if (e.key === 'Enter') {
-    handleSearch()
-  }
-}
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
 
   useEffect(() => {
-    setLocation(searchParams.get('location') || '')
-    setBudget(searchParams.get('budget') || '')
-    setVibe(searchParams.get('vibe') || '')
-    const d = searchParams.get('date')
-    setDate(d ? new Date(d) : null)
-  }, [searchParams, setLocation, setBudget, setVibe, setDate])
+    setLocation(searchParams.get("location") || "");
+    setBudget(searchParams.get("budget") || "");
+    setVibe(searchParams.get("vibe") || "");
+    const d = searchParams.get("date");
+    setDate(d ? new Date(d) : null);
+  }, [searchParams, setLocation, setBudget, setVibe, setDate]);
 
   return (
     <nav className="w-full bg-background sticky top-0 z-50 py-1 flex items-center justify-between px-4">
       {/* Brand: Sparkles icon is 1.5rem (24px), text is 1.5rem (24px) bold */}
-      <Link href="/" className="flex items-center space-x-2 font-bold text-foreground font-sans tracking-tight -ml-8">
+      <Link
+        href="/"
+        className="flex items-center space-x-2 font-bold text-foreground font-sans tracking-tight -ml-8"
+      >
         <Sparkles className="h-8 w-8 text-primary" />
-        <span style={{ fontSize: '26px' }}>PartaiBook</span>
+        <span style={{ fontSize: "26px" }}>PartaiBook</span>
       </Link>
 
-      {pathname === '/search' && (
+      {pathname !== "/search" && pathname !== "/" && (
         <div className="w-full max-w-2xl mx-4 flex items-center gap-2">
           <input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-              onKeyDown={handleKeyDown}
+            onKeyDown={handleKeyDown}
             placeholder="Where"
             className="border rounded-full px-4 py-2 w-full text-sm text-black bg-gray-50"
           />
@@ -72,15 +92,15 @@ export default function Navbar() {
             value={vibe}
             onChange={(e) => setVibe(e.target.value)}
             placeholder="What do you need?"
-              onKeyDown={handleKeyDown}
+            onKeyDown={handleKeyDown}
             className="border rounded-full px-4 py-2 w-full text-sm text-black bg-gray-50"
           />
           <input
-  value={budget}
-  onChange={(e) => setBudget(e.target.value)}
-  placeholder="Budget"
-    onKeyDown={handleKeyDown}
-  className="border rounded-full px-4 py-2 w-full text-sm text-black bg-gray-50"
+            value={budget}
+            onChange={(e) => setBudget(e.target.value)}
+            placeholder="Budget"
+            onKeyDown={handleKeyDown}
+            className="border rounded-full px-4 py-2 w-full text-sm text-black bg-gray-50"
           />
           <button
             onClick={handleSearch}
@@ -93,12 +113,12 @@ export default function Navbar() {
       )}
 
       <div className="flex gap-1 items-center mr-[-32px]">
-        {pathname !== '/search' && (
+        {pathname !== "/search" && (
           <button
             onClick={() => {
-              const section = document.getElementById('how-it-works')
+              const section = document.getElementById("how-it-works");
               if (section) {
-                section.scrollIntoView({ behavior: 'smooth' })
+                section.scrollIntoView({ behavior: "smooth" });
               }
             }}
             className="text-base font-normal text-foreground hover:text-primary transition bg-transparent px-4 py-2 rounded focus:outline-none font-sans mr-2"
@@ -106,11 +126,16 @@ export default function Navbar() {
             How it works
           </button>
         )}
-        <div className="ml-1">
-          <HamburgerDrawer className="text-white bg-primary hover:bg-primary/90 transition-colors rounded-sm p-2 flex items-center justify-center" aria-label="Open menu" />
+        <div className="ml-1" ref={hamburgerRef}>
+          <HamburgerDrawer
+            className="text-white bg-primary hover:bg-primary/90 transition-colors rounded-sm p-2 flex items-center justify-center"
+            aria-label="Open menu"
+            isOpen={isHamburgerOpen}
+            onToggle={() => setIsHamburgerOpen(!isHamburgerOpen)}
+            drawerRef={hamburgerDrawerRef}
+          />
         </div>
       </div>
-      {/* border line removed, now handled in page.tsx */}
     </nav>
-  )
+  );
 }
