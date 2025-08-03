@@ -1,6 +1,10 @@
+
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import type { GeoJSONSource } from "mapbox-gl";
+import React from "react";
+
+import { useState, useRef, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
@@ -25,6 +29,7 @@ interface Vendor {
   unavailable_dates?: string[];
   longitude?: number;
   latitude?: number;
+  [key: string]: string | string[] | number | boolean | undefined;
 }
 
 interface VendorCategories {
@@ -34,7 +39,7 @@ interface VendorCategories {
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
-export default function SearchPage() {
+function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [vibeQuery, setVibeQuery] = useState(searchParams.get("q") || "");
@@ -62,6 +67,33 @@ export default function SearchPage() {
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapBounds, setMapBounds] = useState<mapboxgl.LngLatBounds | null>(null); // Used now
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  // --- Move fetchVendorsInBounds above all useEffect hooks that reference it ---
+  const fetchVendorsInBounds = React.useCallback(async (bounds: mapboxgl.LngLatBounds) => {
+    if (!bounds) return; // Guard against null
+    const { data } = await supabase
+      .from("vendors")
+      .select("*")
+      .gte("latitude", bounds.getSouth())
+      .lte("latitude", bounds.getNorth())
+      .gte("longitude", bounds.getWest())
+      .lte("longitude", bounds.getEast());
+    if (data) {
+      const vendorsWithCoords = await Promise.all(data.map(async (vendor: Vendor) => {
+        if (vendor.location && (!vendor.longitude || !vendor.latitude)) {
+          const [longitude, latitude] = await geocodeLocation(vendor.location);
+          await supabase
+            .from("vendors")
+            .update({ longitude, latitude })
+            .eq("id", vendor.id);
+          return { ...vendor, longitude, latitude };
+        }
+        return vendor;
+      }));
+      setVendors(vendorsWithCoords);
+      if (map.current) updateMapMarkers(vendorsWithCoords);
+    }
+  }, []);
 
   // Fetch vendors with geocoded coordinates (temporary client-side geocoding until API route is adjusted)
   useEffect(() => {
@@ -310,53 +342,33 @@ export default function SearchPage() {
     map.current.on("move", () => {
       const bounds = map.current!.getBounds();
       setMapBounds(bounds);
-      fetchVendorsInBounds(bounds);
+      if (bounds) fetchVendorsInBounds(bounds);
     });
 
     return () => {
       if (map.current) map.current.remove();
     };
-  }, [vendors]);
+  }, [vendors, fetchVendorsInBounds]);
 
   const updateMapMarkers = (vendorsToUpdate: Vendor[]) => {
-    if (!map.current || !map.current.getSource("vendors")) return;
-    map.current.getSource("vendors").setData({
-      type: "FeatureCollection",
-      features: vendorsToUpdate
-        .filter(v => v.longitude && v.latitude)
-        .map(v => ({
-          type: "Feature",
-          geometry: { type: "Point", coordinates: [v.longitude!, v.latitude!] },
-          properties: { id: v.id, name: v.name, price: v.price, category: v.category },
-        })),
-    });
-  };
-
-  const fetchVendorsInBounds = async (bounds: mapboxgl.LngLatBounds) => {
-    if (!bounds) return; // Guard against null
-    const { data } = await supabase
-      .from("vendors")
-      .select("*")
-      .gte("latitude", bounds.getSouth())
-      .lte("latitude", bounds.getNorth())
-      .gte("longitude", bounds.getWest())
-      .lte("longitude", bounds.getEast());
-    if (data) {
-      const vendorsWithCoords = await Promise.all(data.map(async (vendor) => {
-        if (vendor.location && (!vendor.longitude || !vendor.latitude)) {
-          const [longitude, latitude] = await geocodeLocation(vendor.location);
-          await supabase
-            .from("vendors")
-            .update({ longitude, latitude })
-            .eq("id", vendor.id);
-          return { ...vendor, longitude, latitude };
-        }
-        return vendor;
-      }));
-      setVendors(vendorsWithCoords);
-      updateMapMarkers(vendorsWithCoords);
+    if (!map.current) return;
+    const source = map.current.getSource("vendors");
+    if (source && "setData" in source) {
+      (source as GeoJSONSource).setData({
+        type: "FeatureCollection",
+        features: vendorsToUpdate
+          .filter(v => v.longitude && v.latitude)
+          .map(v => ({
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [v.longitude!, v.latitude!] },
+            properties: { id: v.id, name: v.name, price: v.price, category: v.category },
+          })),
+      });
     }
   };
+
+
+
 
   // Temporary client-side geocoding (adjust if Geocoding scope is added)
   const geocodeLocation = async (location: string): Promise<[number, number]> => {
@@ -421,7 +433,7 @@ export default function SearchPage() {
         (!categoryFilter || v.category === categoryFilter || v.category.includes(categoryFilter.split(" > ")[1]) || v.category.includes("Other")) &&
         (!dateQuery || !v.unavailable_dates?.some(d => new Date(d).toDateString() === dateQuery.toDateString())) &&
         (!locationQuery || v.location.toLowerCase().includes(locationQuery.toLowerCase())) &&
-        (filters[cat].length === 0 || filters[cat].every(filter => (v as any)[filter] === true)) // Type cast for dynamic keys
+        (filters[cat].length === 0 || filters[cat].every(filter => typeof v[filter] === 'boolean' && v[filter] === true))
       )
     ])
   );
@@ -842,5 +854,13 @@ export default function SearchPage() {
         `}
       </style>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchContent />
+    </Suspense>
   );
 }

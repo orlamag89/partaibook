@@ -111,8 +111,9 @@ const DatePopover: React.FC<DatePopoverProps> = ({
         {isOpen && (
           <div className="calendar-popover">
             <AirbnbCalendar
-              value={value}
-              onChange={(date: Date) => {
+              value={value ? [value] : []}
+              onChange={(dates: Date[]) => {
+                const date = dates.length > 0 ? dates[0] : null;
                 onChange(date);
                 // Keep calendar open for better UX - user can close by clicking outside
               }}

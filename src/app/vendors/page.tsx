@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -38,7 +38,7 @@ const mockVendors: VendorCategories = {
   ],
 };
 
-export default function VendorsPage() {
+function VendorsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const vendorId = searchParams.get("id");
@@ -218,15 +218,15 @@ export default function VendorsPage() {
                       ))}
                     </div>
                     <div className="absolute left-2 top-1/2 -translate-y-1/2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleScroll(vendor.id, "left")}
-                        className="bg-background border border-border rounded-full w-7 h-7 hover:bg-gray-200"
-                        aria-label={`Scroll left ${vendor.name} images`}
-                      >
-                        <ChevronLeft className="h-3.5 w-3.5 text-foreground" />
-                      </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleScroll(vendor.id, "left")}
+                  className="bg-background border border-border rounded-full w-7 h-7 hover:bg-gray-200"
+                  aria-label={`Scroll left ${vendor.name} images`}
+                >
+                  <ChevronLeft className="h-3.5 w-3.5 text-foreground" />
+                </Button>
                     </div>
                     <div className="absolute right-2 top-1/2 -translate-y-1/2">
                       <Button
@@ -248,11 +248,10 @@ export default function VendorsPage() {
                       <button
                         key={`${vendor.id}-dot-${index}`}
                         type="button"
-                        aria-label={`Go to image ${index + 1}`}
-                        aria-selected={activeDots[vendor.id] === index}
-                        tabIndex={0}
-                        onClick={() => handleDotClick(vendor.id, index)}
-                        onKeyDown={(e) => handleDotKeyDown(vendor.id, index, e)}
+                          aria-label={`Go to image ${index + 1}`}
+                          tabIndex={0}
+                          onClick={() => handleDotClick(vendor.id, index)}
+                          onKeyDown={(e) => handleDotKeyDown(vendor.id, index, e)}
                         className={`rounded-full cursor-pointer transition-colors ${activeDots[vendor.id] === index ? "bg-white" : "bg-gray-300"} border border-gray-400`}
                         style={{ minWidth: '8px', minHeight: '8px', width: '8px', height: '8px', marginRight: index === vendor.images.length - 1 ? '0px' : '1px' }}
                       >
@@ -368,5 +367,13 @@ export default function VendorsPage() {
         }`}
       </style>
     </div>
+  );
+}
+
+export default function VendorsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VendorsContent />
+    </Suspense>
   );
 }

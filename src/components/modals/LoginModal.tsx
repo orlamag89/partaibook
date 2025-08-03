@@ -4,8 +4,11 @@ import { Dialog } from '@headlessui/react'
 import { useState } from 'react'
 import { XMarkIcon as XIcon, CheckIcon } from '@heroicons/react/24/solid'
 import { XMarkIcon } from '@heroicons/react/24/outline'
+import { createClient } from '@supabase/supabase-js'
 // Removed useLoginModal import; props will be passed in
 import Image from 'next/image'
+
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 
 

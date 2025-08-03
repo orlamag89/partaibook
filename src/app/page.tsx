@@ -26,7 +26,19 @@ interface Vendor {
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
-const ImageWithFallback = ({ src, fallbackSrc, alt, width, height, className, role, "aria-label": ariaLabel, ...props }) => {
+interface ImageWithFallbackProps {
+  src: string;
+  fallbackSrc: string;
+  alt: string;
+  width: number;
+  height: number;
+  className?: string;
+  role?: string;
+  "aria-label"?: string;
+  [key: string]: unknown;
+}
+
+const ImageWithFallback = ({ src, fallbackSrc, alt, width, height, className, role, "aria-label": ariaLabel, ...props }: ImageWithFallbackProps) => {
   const [imgSrc, setImgSrc] = useState(src);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -462,7 +474,7 @@ export default function HomePage() {
               <div className="w-full border-t border-border my-6" />
 
               <div className="text-center text-sm text-muted-foreground">
-                <p>© 2025 PartaiBook. All rights reserved. Powered by AI, built for real life.</p>
+                <p>© 2025 PartaiBook. All rights reserved. AI-Powered Party Planning for Real Life.</p>
               </div>
             </div>
           </footer>

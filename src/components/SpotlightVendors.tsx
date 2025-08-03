@@ -44,7 +44,7 @@ const ImageWithFallback: React.FC<{
     img.onload = () => setIsLoading(false);
     img.onerror = () => setImgSrc(fallbackSrc);
     img.src = src;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [src, fallbackSrc]);
 
   const validSrc = imgSrc && typeof imgSrc === 'string' && imgSrc.trim() !== '' ? imgSrc : fallbackSrc;
