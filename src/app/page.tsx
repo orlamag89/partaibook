@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense, Component } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Search, Sparkles } from "lucide-react";
+import { Search, Menu, User } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import nlp from "compromise"; // Ensure this is installed
 import "@/app/globals.css";
@@ -11,17 +11,25 @@ import "@/app/globals.css";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import VendorModal from "@/components/modals/VendorModal";
-import Navbar from "@/components/ui/Navbar";
+import HamburgerDrawer from "@/components/ui/HamburgerDrawer";
+import Link from "next/link";
 
 // Define Vendor interface based on your Supabase schema
 interface Vendor {
   id: string;
   name: string;
   location: string;
-  image: string;
-  description: string;
-  price: string;
-  category?: string; // Add if your schema includes this
+  about_your_business: string;
+  price_range: string;
+  service_type?: string;
+  galleryimages?: string[];
+  galleryvideos?: string[];
+  email?: string;
+  phone?: string;
+  verified?: boolean;
+  rating?: number;
+  reviews?: unknown;
+  created_at?: string;
 }
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
@@ -110,9 +118,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 }
 
 const HowItWorks = () => (
-  <section id="how-it-works" className="w-full py-16 px-4 bg-background">
+  <section id="how-it-works" className="w-full py-16 px-4 bg-white">
     <div className="container mx-auto">
-      <h2 className="text-3xl md:text-3xl font-bold text-center text-foreground mb-12 font-sans drop-shadow-sm">
+      <h2 className="text-3xl md:text-3xl font-bold text-center mb-12 font-sans drop-shadow-sm" style={{ color: "#222222" }}>
         How PartaiBook Works
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-16 max-w-6xl mx-auto px-4">
@@ -167,20 +175,31 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const router = useRouter();
 
   // Fetch random vendors from Supabase
   useEffect(() => {
     const fetchRandomVendors = async () => {
-      const { data, error } = await supabase
-        .from("vendors")
-        .select("*")
-        .order("random()") // PostgreSQL random() for randomization
-        .limit(4); // Limit to 4 for spotlight section
-      if (error) {
-        console.error("Error fetching vendors:", error);
-      } else {
-        setVendors(data || []);
+      try {
+        // Use a different approach for randomization that works better with Supabase
+        const { data, error } = await supabase
+          .from("vendors")
+          .select("*")
+          .eq("verified", true) // Only show verified vendors
+          .limit(100); // Get more vendors first
+        
+        if (error) {
+          console.error("Error fetching vendors:", error);
+          console.error("Error details:", JSON.stringify(error, null, 2));
+        } else {
+          console.log("Successfully fetched vendors:", data?.length || 0, "vendors");
+          // Randomly shuffle and take 4
+          const shuffled = data ? data.sort(() => 0.5 - Math.random()).slice(0, 4) : [];
+          setVendors(shuffled);
+        }
+      } catch (err) {
+        console.error("Exception while fetching vendors:", err);
       }
     };
     fetchRandomVendors();
@@ -233,29 +252,67 @@ export default function HomePage() {
   return (
     <Suspense>
       <ErrorBoundary>
-        <div className="min-h-screen bg-background">
-          <header className="bg-background">
-            <div className="container mx-auto px-4 py-2">
-              <Navbar />
+        <div className="min-h-screen bg-white">
+          <header className="bg-white">
+            <div className="container mx-auto px-4 py-3">
+              <div className="flex justify-between items-center">
+                {/* Logo on the left */}
+            <Link href="/" className="cursor-pointer -ml-6">
+              <Image 
+                src="/logo.png" 
+                alt="PartaiBook" 
+                width={140} 
+                height={56} 
+                className="h-[56px] w-auto object-contain" 
+                priority
+                quality={100}
+                unoptimized={true}
+                style={{ 
+                  imageRendering: 'crisp-edges',
+                  WebkitFontSmoothing: 'antialiased',
+                  backfaceVisibility: 'hidden',
+                  transform: 'translateZ(0)'
+                }}
+              />
+            </Link>                {/* Navigation on the right */}
+                <div className="flex items-center space-x-4 mr-[-20px]">
+                  <button
+                    onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="text-base font-normal text-foreground hover:text-primary transition-colors hidden md:block mr-4"
+                  >
+                    How it Works
+                  </button>
+                  <button
+                    onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                    className="text-foreground hover:text-primary transition-colors flex items-center space-x-1 px-2.5 py-2 bg-primary hover:bg-primary/90 rounded-sm ml-3"
+                    aria-label="Open menu"
+                  >
+                    <User className="h-5 w-5 text-white" />
+                    <Menu className="h-5 w-5 text-white" />
+                  </button>
+                </div>
+              </div>
             </div>
             <div className="w-full border-b border-border" />
           </header>
 
-          {/* Restored Hero Section */}
-          <section className="py-16 px-4">
+          <section className="py-16 px-4 bg-white">
             <div className="container mx-auto text-center">
-              <h2 className="text-5xl font-bold text-foreground mb-6">
-                Finally, party planning that <span className="text-secondary">doesn&apos;t suck</span>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6" style={{ color: "#222222" }}>
+                Finally, party planning that <span className="text-primary">doesn&apos;t suck</span>
               </h2>
-              <p className="text-muted-foreground mb-8 max-w-2xl mx-auto" style={{ fontSize: "20px" }}>
-                The smart way to book birthdays and celebrations. Our AI matches your vision to available local vendors, taking you from planned to booked in minutes - not weeks. We handle the chaos, you throw the party.
+              <p className="mb-6 max-w-2xl mx-auto text-lg leading-relaxed" style={{ color: "#222222" }}>
+                Tell Partaibook your party idea or vision - our AI matches you to trusted local vendors so you can book your entire celebration in one go.
+              </p>
+              <p className="mb-8 max-w-2xl mx-auto text-lg leading-relaxed" style={{ color: "#222222" }}>
+                <strong>From planned to booked in minutes, not weeks.</strong>
               </p>
               <div id="search-section" className="max-w-2xl mx-auto mb-8">
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
                   <div className="focus-within:ring-4 focus-within:ring-primary/30 rounded-xl transition-shadow bg-white border-2 border-border focus-within:border-primary focus-within:border-2 p-0">
                     <textarea
-                      placeholder="Describe your party vibe... e.g., 'princess theme for a 5-year-old in Queens, two tiered cake, balloons, decorations, entertainment, maybe food, 27th next month at 2pm, budget of $600'"
+                      placeholder="Describe your party vibe... e.g., 'Girls princess theme party in Queens, 28th next month at 1pm. Find me a two tiered cake, balloons, decorations, entertainment, finger food'"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       rows={2}
@@ -268,7 +325,7 @@ export default function HomePage() {
                   className="mt-4 bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-6 text-lg"
                   onClick={handleFindVendors}
                 >
-                  Find My Perfect Vendors
+                  Plan My Party
                 </Button>
               </div>
 
@@ -291,7 +348,7 @@ export default function HomePage() {
 
           <section id="vendors" className="py-16 px-4 bg-[#effdfa]">
             <div className="container mx-auto">
-              <h2 className="text-3xl md:text-3xl font-bold text-foreground mb-6 text-center">
+              <h2 className="text-3xl md:text-3xl font-bold mb-6 text-center" style={{ color: "#222222" }}>
                 Spotlight Vendors
               </h2>
               <div className="max-w-6xl mx-auto px-4">
@@ -304,36 +361,36 @@ export default function HomePage() {
                         aria-labelledby={`vendor-${vendor.id}-name`}
                       >
                         <h4 id={`vendor-${vendor.id}-name`} className="font-semibold text-base truncate" style={{ color: "#444" }}>
-                          {vendor.name}
+                          {vendor.name?.trim() || 'Unnamed Vendor'}
                         </h4>
-                        <p className="text-sm text-muted-foreground mb-2">{vendor.location}</p>
+                        <p className="text-sm text-muted-foreground mb-2">{vendor.location?.trim() || 'Location not specified'}</p>
                         <div className="relative w-full aspect-[4/3] mb-3">
                           <ImageWithFallback
-                            src={vendor.image}
+                            src={vendor.galleryimages && vendor.galleryimages.length > 0 ? vendor.galleryimages[0] : "/placeholder.jpg"}
                             fallbackSrc="/placeholder.jpg"
-                            alt={vendor.name}
+                            alt={vendor.name?.trim() || 'Vendor'}
                             width={400}
                             height={300}
                             className="w-full object-cover rounded-md"
                             role="img"
-                            aria-label={`${vendor.name} vendor image`}
+                            aria-label={`${vendor.name?.trim() || 'Vendor'} vendor image`}
                           />
                         </div>
                         <p className="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-3">
-                          {vendor.description && vendor.description.trim() !== ''
-                            ? vendor.description
+                          {vendor.about_your_business && vendor.about_your_business.trim() !== ''
+                            ? vendor.about_your_business.trim()
                             : 'No description provided.'}
                         </p>
                         <div className="flex justify-between items-center mt-auto">
                           <span className="text-base font-semibold" style={{ color: "#444" }}>
-                            {vendor.price && vendor.price !== '' && !isNaN(Number(vendor.price))
-                              ? `From $${vendor.price}`
+                            {vendor.price_range && vendor.price_range.trim() !== ''
+                              ? vendor.price_range.trim()
                               : 'Contact for price'}
                           </span>
                           <Button
                             onClick={() => openModal(vendor)}
                             className="bg-primary text-primary-foreground font-semibold py-1.5 px-4 rounded-full shadow hover:bg-primary/90 transition text-sm"
-                            aria-label={`Quick view for ${vendor.name}`}
+                            aria-label={`Quick view for ${vendor.name?.trim() || 'vendor'}`}
                           >
                             Quick View
                           </Button>
@@ -350,10 +407,9 @@ export default function HomePage() {
 
           <HowItWorks />
 
-          {/* Restored Comparison Section */}
           <section className="py-16 px-4 !bg-[#FDF9F5] relative z-10">
             <div className="container mx-auto max-w-6xl">
-              <h2 className="text-3xl font-bold text-center text-foreground mb-4">
+              <h2 className="text-3xl font-bold text-center mb-4" style={{ color: "#222222" }}>
                 The Old Way vs. The PartaiBook Way
               </h2>
               <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
@@ -420,12 +476,12 @@ export default function HomePage() {
             </div>
           </section>
 
-          <section className="py-12 px-4 bg-gradient-to-r from-primary to-secondary">
+          <section className="py-12 px-4 bg-white">
             <div className="container mx-auto text-center max-w-4xl">
-              <h2 className="text-3xl md:text-3xl font-bold text-center text-white mb-3 font-sans drop-shadow-sm">
+              <h2 className="text-3xl md:text-3xl font-bold text-center mb-3 font-sans drop-shadow-sm" style={{ color: "#222222" }}>
                 The party you&apos;re imagining? It&apos;s one click away.
               </h2>
-              <p className="text-[18px] text-white/90 leading-relaxed mb-6">
+              <p className="text-[18px] leading-relaxed mb-6" style={{ color: "#222222" }}>
                 Let our AI handle the messy stuff - even the ghosting. Just show up, enjoy, and feel like a genius.<br />
                 People won&apos;t believe you planned it all in minutes, while you smile like a lazy event god.<br />
                 <span className="block mt-4">Welcome to your era of effortless parties.</span>
@@ -433,8 +489,8 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
                   size="lg"
-                  variant="secondary"
-                  className="bg-white text-primary hover:bg-white/90"
+                  variant="default"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                   onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                   aria-label="Start planning your party now"
                 >
@@ -442,8 +498,8 @@ export default function HomePage() {
                 </Button>
                 <Button
                   size="lg"
-                  variant="secondary"
-                  className="bg-white text-primary hover:bg-white/90"
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                   onClick={() => window.open("https://example.com/demo", "_blank")}
                   aria-label="Watch a demo video of PartaiBook in action"
                 >
@@ -454,19 +510,28 @@ export default function HomePage() {
           </section>
 
           {isModalOpen && selectedVendor ? (
-            <VendorModal vendor={{ ...selectedVendor, price: Number(selectedVendor.price) || 0 }} isOpen={isModalOpen} onClose={closeModal} />
+            <VendorModal 
+              vendor={{ 
+                ...selectedVendor, 
+                description: selectedVendor.about_your_business || '',
+                price: 0, // VendorModal expects a number, but we have a string range
+                image: selectedVendor.galleryimages && selectedVendor.galleryimages.length > 0 ? selectedVendor.galleryimages[0] : "/placeholder.jpg",
+                galleryImages: selectedVendor.galleryimages || []
+              }} 
+              isOpen={isModalOpen} 
+              onClose={closeModal} 
+            />
           ) : null}
 
           <footer className="py-6 px-4 bg-muted text-sm">
             <div className="container mx-auto">
               <div className="flex flex-col md:flex-row justify-between items-center">
                 <div className="flex items-center space-x-2 mb-4 md:mb-0">
-                  <Sparkles className="h-6 w-6 text-primary" />
-                  <span className="text-lg font-semibold text-foreground">PartaiBook</span>
+                  <span className="text-lg font-semibold text-teal-600">PartaiBook</span>
                 </div>
                 <div className="flex space-x-6 text-sm">
-                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Privacy</a>
-                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Terms</a>
+                  <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">Privacy</Link>
+                  <Link href="/terms" className="text-muted-foreground hover:text-primary transition-colors">Terms</Link>
                   <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Support</a>
                 </div>
               </div>
@@ -478,6 +543,14 @@ export default function HomePage() {
               </div>
             </div>
           </footer>
+
+          {/* Hamburger Drawer - positioned as fixed overlay */}
+          {isDrawerOpen && (
+            <HamburgerDrawer 
+              isOpen={isDrawerOpen} 
+              onToggle={() => setIsDrawerOpen(!isDrawerOpen)} 
+            />
+          )}
         </div>
       </ErrorBoundary>
     </Suspense>

@@ -7,9 +7,8 @@ import React from "react";
 import { useState, useRef, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Menu, User } from "lucide-react";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
 import HamburgerDrawer from "@/components/ui/HamburgerDrawer";
 import { Button } from "@/components/ui/button";
 import ShortlistModal from "./ShortlistModal";
@@ -47,13 +46,11 @@ function SearchContent() {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [isVibeInputOpen, setIsVibeInputOpen] = useState(false);
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const loginModalRef = useRef<HTMLDivElement>(null);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const scrollRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  const navbarRef = useRef<HTMLDivElement>(null);
-  const hamburgerRef = useRef<HTMLDivElement>(null);
-  const hamburgerDrawerRef = useRef<HTMLDivElement>(null);
   const vibeDropdownRef = useRef<HTMLDivElement>(null);
   const calendarDropdownRef = useRef<HTMLDivElement>(null);
   const vendorImageRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -91,7 +88,10 @@ function SearchContent() {
         return vendor;
       }));
       setVendors(vendorsWithCoords);
-      if (map.current) updateMapMarkers(vendorsWithCoords);
+      // Only update map markers if map is loaded
+      if (map.current && map.current.loaded()) {
+        updateMapMarkers(vendorsWithCoords);
+      }
     }
   }, []);
 
@@ -113,7 +113,10 @@ function SearchContent() {
           return vendor;
         }));
         setVendors(vendorsWithCoords);
-        if (map.current) updateMapMarkers(vendorsWithCoords);
+        // Only update map markers if map is loaded
+        if (map.current && map.current.loaded()) {
+          updateMapMarkers(vendorsWithCoords);
+        }
       }
     };
     fetchVendors();
@@ -160,20 +163,14 @@ function SearchContent() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      const isNavbar = navbarRef.current && navbarRef.current.contains(target);
       const isVibeDropdown = vibeDropdownRef.current && vibeDropdownRef.current.contains(target);
       const isCalendarDropdown = calendarDropdownRef.current && calendarDropdownRef.current.contains(target);
-      const isHamburger = hamburgerRef.current && hamburgerRef.current.contains(target);
-      const isHamburgerDrawer = hamburgerDrawerRef.current && hamburgerDrawerRef.current.contains(target);
       const isLoginModal = loginModalRef.current && loginModalRef.current.contains(target);
-      if (!isNavbar && !isVibeDropdown && !isCalendarDropdown && !isHamburger && !isLoginModal) {
+      if (!isVibeDropdown && !isCalendarDropdown && !isLoginModal) {
         setIsSearchExpanded(false);
         setIsVibeInputOpen(false);
         setIsHamburgerOpen(false);
         setIsLoginModalOpen(false);
-      }
-      if (isHamburgerOpen && !isHamburgerDrawer && !isHamburger) {
-        setIsHamburgerOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -296,74 +293,97 @@ function SearchContent() {
   // Initialize Map
   useEffect(() => {
     if (map.current || !mapContainer.current) return;
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v11",
-      center: [-73.935242, 40.730610], // Default to Queens, NY
-      zoom: 10,
-    });
-
-    map.current.on("load", () => {
-      map.current!.addSource("vendors", {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: [],
-        },
-      });
-      map.current!.addLayer({
-        id: "vendors",
-        type: "circle",
-        source: "vendors",
-        paint: {
-          "circle-radius": 6,
-          "circle-color": [
-            "match",
-            ["get", "category"],
-            "Cakes & Desserts", "#FFF9C4",
-            "Catering & Food", "#C8E6C9",
-            "Balloons & Decor", "#F8BBD0",
-            "Entertainment", "#FFCDD2",
-            "Photography & Video", "#FFE0B2",
-            "Venue Hire", "#BBDEFB",
-            "Kids Activities", "#F8BBD0",
-            "Transport", "#D7CCC8",
-            "Games & Rentals", "#B2DFDB",
-            "Other", "#D7CCC8",
-            "#D7CCC8", // Default color
-          ],
-          "circle-opacity": 0.8,
-        },
+    
+    try {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: "mapbox://styles/mapbox/streets-v11",
+        center: [-73.935242, 40.730610], // Default to Queens, NY
+        zoom: 10,
       });
 
-      updateMapMarkers(vendors);
-    });
+      map.current.on("load", () => {
+        if (!map.current) return;
+        
+        map.current.addSource("vendors", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: [],
+          },
+        });
+        
+        map.current.addLayer({
+          id: "vendors",
+          type: "circle",
+          source: "vendors",
+          paint: {
+            "circle-radius": 6,
+            "circle-color": [
+              "match",
+              ["get", "category"],
+              "Cakes & Desserts", "#FFF9C4",
+              "Catering & Food", "#C8E6C9",
+              "Balloons & Decor", "#F8BBD0",
+              "Entertainment", "#FFCDD2",
+              "Photography & Video", "#FFE0B2",
+              "Venue Hire", "#BBDEFB",
+              "Kids Activities", "#F8BBD0",
+              "Transport", "#D7CCC8",
+              "Games & Rentals", "#B2DFDB",
+              "Other", "#D7CCC8",
+              "#D7CCC8", // Default color
+            ],
+            "circle-opacity": 0.8,
+          },
+        });
 
-    map.current.on("move", () => {
-      const bounds = map.current!.getBounds();
-      setMapBounds(bounds);
-      if (bounds) fetchVendorsInBounds(bounds);
-    });
+        // Only update markers after map has fully loaded
+        updateMapMarkers(vendors);
+      });
+
+      map.current.on("move", () => {
+        if (!map.current) return;
+        const bounds = map.current.getBounds();
+        setMapBounds(bounds);
+        if (bounds) fetchVendorsInBounds(bounds);
+      });
+
+      map.current.on("error", (e) => {
+        console.warn("Map error:", e);
+      });
+
+    } catch (error) {
+      console.error("Failed to initialize map:", error);
+    }
 
     return () => {
-      if (map.current) map.current.remove();
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, [vendors, fetchVendorsInBounds]);
 
   const updateMapMarkers = (vendorsToUpdate: Vendor[]) => {
-    if (!map.current) return;
-    const source = map.current.getSource("vendors");
-    if (source && "setData" in source) {
-      (source as GeoJSONSource).setData({
-        type: "FeatureCollection",
-        features: vendorsToUpdate
-          .filter(v => v.longitude && v.latitude)
-          .map(v => ({
-            type: "Feature",
-            geometry: { type: "Point", coordinates: [v.longitude!, v.latitude!] },
-            properties: { id: v.id, name: v.name, price: v.price, category: v.category },
-          })),
-      });
+    if (!map.current || !map.current.loaded()) return;
+    
+    try {
+      const source = map.current.getSource("vendors");
+      if (source && "setData" in source) {
+        (source as GeoJSONSource).setData({
+          type: "FeatureCollection",
+          features: vendorsToUpdate
+            .filter(v => v.longitude && v.latitude)
+            .map(v => ({
+              type: "Feature",
+              geometry: { type: "Point", coordinates: [v.longitude!, v.latitude!] },
+              properties: { id: v.id, name: v.name, price: v.price, category: v.category },
+            })),
+        });
+      }
+    } catch (error) {
+      console.warn("Map markers update failed:", error);
     }
   };
 
@@ -458,66 +478,95 @@ function SearchContent() {
           </div>
         </div>
       )}
-      <header className="w-full sticky top-0 z-[2000] bg-[#F9F9F9]">
-        <div className="container mx-auto px-4 py-0 max-w-7xl">
-          <nav className="w-full h-20 py-2 flex items-center justify-between px-4 bg-[#F9F9F9]" ref={navbarRef}>
-            <div className="flex items-center justify-between w-full">
-              <Link href="/" className="flex items-center space-x-2 font-bold text-foreground font-sans tracking-tight -ml-8 mt-0.5" aria-label="Home">
-                <Sparkles className="h-8 w-8 text-primary" />
-                <span className="text-2xl">PartaiBook</span>
-              </Link>
-              <div className="flex-1 flex justify-center">
-                <div className="max-w-[340px] w-full flex items-center gap-2 mt-0.5">
-                  <div className="flex items-center border rounded-full px-4 py-2 bg-gray-50 text-sm text-black w-full" aria-label="Edit search">
-                    <div className="flex-1 pr-2 truncate max-w-[220px] min-w-[120px]" onClick={() => setIsVibeInputOpen(true)}>
-                      <span className="text-sm">{vibeQuery || "Make changes?"}</span>
-                    </div>
-                    <div className="border-l border-border h-6 mx-2" />
-                    <div className="flex-none w-[60px] pl-2 truncate" onClick={() => setIsSearchExpanded(true)}>
-                      <span className="text-sm">
-                        {dateQuery
-                          ? `${dateQuery.toLocaleString('en-US', { month: 'short' })} ${dateQuery.getDate()}`
-                          : "Date"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-end ml-2">
-                      <Search className="h-5 w-5 text-[#A78BFA]" />
-                    </div>
+      <header className="w-full sticky top-0 z-[2000] bg-white">
+        <div className="container mx-auto px-4 py-3">
+          <nav className="flex justify-between items-center">
+            {/* Logo on the left */}
+            <Link href="/" className="cursor-pointer -ml-6">
+              <Image 
+                src="/logo.png" 
+                alt="PartaiBook" 
+                width={140} 
+                height={56} 
+                className="h-[56px] w-auto object-contain" 
+                priority
+                quality={100}
+                unoptimized={true}
+                style={{ 
+                  imageRendering: 'crisp-edges',
+                  WebkitFontSmoothing: 'antialiased',
+                  backfaceVisibility: 'hidden',
+                  transform: 'translateZ(0)'
+                }}
+              />
+            </Link>
+            
+            {/* Search bar in the center */}
+            <div className="flex-1 flex justify-center max-w-md mx-8">
+              <div className="w-full flex items-center gap-2">
+                <div className="flex items-center border rounded-full px-4 py-2 bg-gray-50 text-sm text-black w-full" aria-label="Edit search">
+                  <div className="flex-1 pr-2 truncate max-w-[220px] min-w-[120px]" onClick={() => setIsVibeInputOpen(true)}>
+                    <span className="text-sm">{vibeQuery || "Make changes?"}</span>
+                  </div>
+                  <div className="border-l border-border h-6 mx-2" />
+                  <div className="flex-none w-[60px] pl-2 truncate" onClick={() => setIsSearchExpanded(true)}>
+                    <span className="text-sm">
+                      {dateQuery
+                        ? `${dateQuery.toLocaleString('en-US', { month: 'short' })} ${dateQuery.getDate()}`
+                        : "Date"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-end ml-2">
+                    <Search className="h-5 w-5 text-[#A78BFA]" />
                   </div>
                 </div>
               </div>
-              <div className="flex gap-1 items-center mr-[-32px] mt-0.5" ref={hamburgerRef}>
-                <div className="ml-1">
-                  <HamburgerDrawer
-                    className="text-white bg-primary hover:bg-primary/90 transition-colors rounded-sm p-2 flex items-center justify-center"
-                    aria-label="Open menu"
-                    isOpen={isHamburgerOpen}
-                    onToggle={() => setIsHamburgerOpen(!isHamburgerOpen)}
-                    drawerRef={hamburgerDrawerRef}
-                  />
-                </div>
-              </div>
+            </div>
+
+            {/* Navigation on the right */}
+            <div className="flex items-center space-x-4 mr-[-20px]">
+              <button
+                onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-base font-normal text-foreground hover:text-primary transition-colors hidden md:block mr-4"
+              >
+                How it Works
+              </button>
+              <button
+                onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                className="text-foreground hover:text-primary transition-colors flex items-center space-x-1 px-2.5 py-2 bg-primary hover:bg-primary/90 rounded-sm ml-3"
+                aria-label="Open menu"
+              >
+                <User className="h-5 w-5 text-white" />
+                <Menu className="h-5 w-5 text-white" />
+              </button>
             </div>
           </nav>
-          <div className="w-full border-b border-border" />
-          <div className="flex overflow-x-auto space-x-2 p-2 bg-gray-100 sticky top-20 z-10">
-            {Object.keys(categories).map(cat => (
-              <button
-                key={cat}
-                onClick={() => setCategoryFilter(cat === categoryFilter ? "" : cat)}
-                className={`px-3 py-1 rounded-full text-sm font-medium ${categoryFilter === cat ? "bg-primary text-white" : "bg-white text-foreground hover:bg-gray-200"}`}
-                style={{ backgroundColor: categoryFilter === cat ? categoryColors[cat] : "transparent" }}
-              >
-                {cat}
-              </button>
-            ))}
-            <button
-              onClick={() => setIsFilterModalOpen(true)}
-              className="px-3 py-1 rounded-full text-sm font-medium bg-white text-foreground hover:bg-gray-200"
+        </div>
+        <div className="w-full border-b border-border" />
+        
+        {/* Enhanced Category Filter Bar */}
+        <div className="flex overflow-x-auto space-x-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 sticky top-20 z-10 scrollbar-hide">
+          {Object.keys(categories).map(cat => (
+            <Button
+              key={cat}
+              onClick={() => setCategoryFilter(cat === categoryFilter ? "" : cat)}
+              variant={categoryFilter === cat ? "default" : "outline"}
+              className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
+                categoryFilter === cat 
+                  ? "bg-primary text-white shadow-lg scale-105" 
+                  : "bg-white border-border text-foreground hover:bg-primary hover:text-white hover:border-primary"
+              }`}
             >
-              Filters
-            </button>
-          </div>
+              {cat} {categoryFilter === cat && "✨"}
+            </Button>
+          ))}
+          <Button
+            onClick={() => setIsFilterModalOpen(true)}
+            variant="outline"
+            className="px-4 py-2 rounded-full text-sm font-semibold bg-white border-primary text-primary hover:bg-primary hover:text-white whitespace-nowrap"
+          >
+            🔍 More Filters
+          </Button>
         </div>
       </header>
 
@@ -560,220 +609,381 @@ function SearchContent() {
         </div>
       )}
 
-      <section className="py-6 px-6 mt-4">
-        <div className="container mx-auto max-w-7xl flex flex-col md:flex-row gap-4">
+      {/* Hero Results Section */}
+      <section className="py-8 px-4 bg-gradient-to-br from-purple-50 to-pink-50">
+        <div className="container mx-auto max-w-6xl text-center">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: "#222222" }}>
+            🎉 Amazing Vendors Found!
+          </h1>
+          <p className="text-lg mb-6 max-w-2xl mx-auto leading-relaxed" style={{ color: "#222222" }}>
+            We discovered <span className="font-bold text-primary">{totalVendors} perfect vendors</span> to make your party absolutely unforgettable!
+          </p>
+          
           {spotlightVendor && (
-            <div className="mb-8 p-4 bg-primary/10 rounded-lg w-full md:w-2/3">
-              <h3 className="text-foreground">Spotlight Vendor</h3>
-              <Link href={`/vendors/${spotlightVendor.id}`}>
-                <h4>{spotlightVendor.name}</h4>
-                <p>{spotlightVendor.description}</p>
+            <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-border max-w-2xl mx-auto">
+              <div className="flex items-center justify-center mb-3">
+                <span className="text-2xl mr-2">⭐</span>
+                <h3 className="font-semibold text-lg" style={{ color: "#222222" }}>Spotlight Vendor</h3>
+              </div>
+              <Link href={`/vendors/${spotlightVendor.id}`} className="block hover:bg-gray-50 rounded-lg p-3 transition-colors">
+                <h4 className="font-bold text-primary text-xl mb-2">{spotlightVendor.name}</h4>
+                <p className="text-muted-foreground">{spotlightVendor.description}</p>
+                <Button size="sm" className="mt-3 bg-primary text-primary-foreground hover:bg-primary/90">
+                  View Details ✨
+                </Button>
               </Link>
             </div>
           )}
-          <h2 className="text-lg font-semibold mb-16 text-left text-foreground w-full md:w-2/3" style={{ marginLeft: "0" }}>
-            <span style={{ color: '#2c3e50' }}>🎉 {totalVendors} vendors found for your party!</span>
-          </h2>
-          <div className="w-full md:w-2/3">
+        </div>
+      </section>
+
+      {/* Main Vendors Section */}
+      <section className="py-8 px-4 bg-white">
+        <div className="container mx-auto max-w-7xl flex flex-col lg:flex-row gap-8">
+          <div className="w-full lg:w-2/3">
             {Object.entries(filteredVendors).map(([category, vendors]) => (
-              <div key={category} className="mb-12 mt-4 relative">
-                <h3
-                  className="text-base font-semibold text-left text-foreground inline-block px-3 py-1 rounded-full mb-2"
-                  style={{ backgroundColor: categoryColors[category], color: "#2c3e50" }}
-                >
-                  {category} ({vendors.length})
-                </h3>
-                <div
-                  ref={(el) => { (scrollRefs.current[category] as HTMLDivElement | null) = el; }}
-                  id={`vendor-row-${category}`}
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 pb-4"
-                >
-                  <div className="absolute left-0 right-0 flex justify-between" style={{ top: "0" }}>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleScroll(category, "left")}
-                      className="bg-background border border-border rounded-full w-7 h-7 hover:bg-gray-200 ml-[-40px]"
-                      aria-label={`Scroll left ${category}`}
+              <div key={category} className="mb-12">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3" style={{ color: "#222222" }}>
+                    <span 
+                      className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold"
+                      style={{ backgroundColor: categoryColors[category], color: "#222222" }}
                     >
-                      <ChevronLeft className="h-3.5 w-3.5 text-foreground" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleScroll(category, "right")}
-                      className="bg-background border border-border rounded-full w-7 h-7 hover:bg-gray-200 mr-[-40px]"
-                      aria-label={`Scroll right ${category}`}
-                    >
-                      <ChevronRight className="h-3.5 w-3.5 text-foreground" />
-                    </Button>
-                  </div>
-                  {vendors.map((vendor) => {
-                    if (!vendor.images || !vendor.images.length) {
-                      return <div key={vendor.id} className="w-full h-64 bg-gray-200 flex items-center justify-center">No images available</div>;
-                    }
-                    return (
-                      <Link key={vendor.id} href={`/vendors/${vendor.id}`} className="w-full flex-shrink-0 block">
-                        <div className="relative w-full h-64">
-                          <div
-                            ref={(el) => { if (el) vendorImageRefs.current[vendor.id] = el; }}
-                            className="flex overflow-x-auto scroll-snap-type-x mandatory space-x-2 pb-4 scrollbar-hide"
-                            style={{ scrollBehavior: "smooth" }}
-                          >
-                            {vendor.images.map((image, index) => (
-                              <div key={`${vendor.id}-${index}`} className="flex-shrink-0 w-full h-64 relative">
-                                {failedImages.has(`${vendor.id}-${index}`) ? (
-                                  <Image
-                                    src="/api/placeholder/300/200"
-                                    alt={`${vendor.name} placeholder ${index + 1}`}
-                                    width={250}
-                                    height={256}
-                                    className="w-full h-64 object-cover rounded-md"
-                                    unoptimized
-                                  />
-                                ) : (
-                                  <Image
-                                    src={image}
-                                    alt={`${vendor.name} image ${index + 1}`}
-                                    width={250}
-                                    height={256}
-                                    className="w-full h-64 object-cover rounded-md"
-                                    onError={() => handleImageError(`${vendor.id}-${index}`)}
-                                    unoptimized
-                                  />
-                                )}
-                                <div className="absolute top-2 right-2">
+                      {category}
+                    </span>
+                    <span className="text-primary text-lg">({vendors.length})</span>
+                  </h2>
+                </div>
+                
+                <div className="relative">
+                  {/* Scroll buttons */}
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleScroll(category, "left")}
+                    className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-10 bg-white border-2 border-primary rounded-full w-10 h-10 hover:bg-primary hover:text-white shadow-lg hidden md:flex"
+                    aria-label={`Scroll left ${category}`}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleScroll(category, "right")}
+                    className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-10 bg-white border-2 border-primary rounded-full w-10 h-10 hover:bg-primary hover:text-white shadow-lg hidden md:flex"
+                    aria-label={`Scroll right ${category}`}
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </Button>
+
+                  {/* Vendor grid with horizontal scroll */}
+                  <div
+                    ref={(el) => { (scrollRefs.current[category] as HTMLDivElement | null) = el; }}
+                    className="flex overflow-x-auto gap-6 pb-4 scrollbar-hide scroll-smooth"
+                    style={{ scrollSnapType: 'x mandatory' }}
+                  >
+                    {vendors.map((vendor) => {
+                      if (!vendor.images || !vendor.images.length) {
+                        return (
+                          <div key={vendor.id} className="flex-shrink-0 w-[280px] md:w-[300px]">
+                            <div className="bg-gray-100 rounded-2xl h-64 flex items-center justify-center border border-border">
+                              <span className="text-muted-foreground">No images available</span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div key={vendor.id} className="flex-shrink-0 w-[280px] md:w-[300px]" style={{ scrollSnapAlign: 'start' }}>
+                          <Link href={`/vendors/${vendor.id}`} className="block group">
+                            <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-border overflow-hidden group-hover:scale-[1.02]">
+                              <div className="relative h-48">
+                                <div
+                                  ref={(el) => { if (el) vendorImageRefs.current[vendor.id] = el; }}
+                                  className="flex overflow-x-auto scrollbar-hide h-full"
+                                  style={{ scrollBehavior: "smooth", scrollSnapType: 'x mandatory' }}
+                                >
+                                  {vendor.images.map((image, index) => (
+                                    <div key={`${vendor.id}-${index}`} className="flex-shrink-0 w-full h-full relative" style={{ scrollSnapAlign: 'start' }}>
+                                      {failedImages.has(`${vendor.id}-${index}`) ? (
+                                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                          <span className="text-muted-foreground">Image unavailable</span>
+                                        </div>
+                                      ) : (
+                                        <Image
+                                          src={image}
+                                          alt={`${vendor.name} image ${index + 1}`}
+                                          width={300}
+                                          height={192}
+                                          className="w-full h-full object-cover"
+                                          onError={() => handleImageError(`${vendor.id}-${index}`)}
+                                          unoptimized
+                                        />
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                                
+                                {/* Checkbox overlay */}
+                                <div className="absolute top-3 right-3">
                                   <label className="custom-checkbox">
                                     <input
                                       type="checkbox"
-                                      id={`checkbox-${vendor.id}`}
                                       checked={selectedVendors.has(vendor.id)}
                                       onChange={(e) => { e.stopPropagation(); handleCheckboxChange(vendor.id, e); }}
-                                      readOnly
+                                      onClick={(e) => e.stopPropagation()}
                                     />
                                     <span className="checkmark" />
                                   </label>
                                 </div>
+
+                                {/* Image dots */}
+                                {vendor.images.length > 1 && (
+                                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+                                    {vendor.images.map((_, index) => (
+                                      <button
+                                        key={`${vendor.id}-dot-${index}`}
+                                        type="button"
+                                        aria-label={`Go to image ${index + 1}`}
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          const ref = vendorImageRefs.current[vendor.id];
+                                          if (ref) {
+                                            const scrollWidth = ref.scrollWidth;
+                                            const clientWidth = ref.clientWidth;
+                                            const newScrollLeft = (index / (ref.children.length - 1)) * (scrollWidth - clientWidth);
+                                            ref.scrollLeft = newScrollLeft;
+                                            setActiveDots((prev) => ({ ...prev, [vendor.id]: index }));
+                                          }
+                                        }}
+                                        onKeyDown={(e) => handleDotKeyDown(vendor.id, index, e)}
+                                        className={`w-2 h-2 rounded-full transition-colors ${
+                                          activeDots[vendor.id] === index ? "bg-white" : "bg-white/50"
+                                        } border border-gray-400 shadow-sm`}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
                               </div>
-                            ))}
-                          </div>
-                          <div
-                            className="absolute left-1/2 -translate-x-1/2 bottom-2 flex justify-center items-center gap-1"
-                          >
-                            {vendor.images.map((_, index) => (
-                              <button
-                                key={`${vendor.id}-dot-${index}`}
-                                type="button"
-                                aria-label={`Go to image ${index + 1}`}
-                                tabIndex={0}
-                                onClick={() => {
-                                  const ref = vendorImageRefs.current[vendor.id];
-                                  if (ref) {
-                                    const scrollWidth = ref.scrollWidth;
-                                    const clientWidth = ref.clientWidth;
-                                    const newScrollLeft = (index / (ref.children.length - 1)) * (scrollWidth - clientWidth);
-                                    ref.scrollLeft = newScrollLeft;
-                                    setActiveDots((prev) => ({ ...prev, [vendor.id]: index }));
-                                  }
-                                }}
-                                onKeyDown={(e) => handleDotKeyDown(vendor.id, index, e)}
-                                className={`rounded-full cursor-pointer transition-colors ${activeDots[vendor.id] === index ? "bg-white" : "bg-gray-300"} border border-gray-400`}
-                                style={{ minWidth: '8px', minHeight: '8px', width: '8px', height: '8px', marginRight: index === vendor.images.length - 1 ? '0px' : '1px' }}
-                              >
-                                {activeDots[vendor.id] === index && <span className="sr-only">Active image {index + 1}</span>}
-                              </button>
-                            ))}
-                          </div>
+                              
+                              {/* Vendor info */}
+                              <div className="p-4">
+                                <h3 className="font-bold text-lg mb-1 truncate group-hover:text-primary transition-colors" style={{ color: "#222222" }}>
+                                  {vendor.name}
+                                </h3>
+                                <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                                  <span>📍</span>
+                                  {vendor.location}
+                                </p>
+                                <p className="text-sm font-semibold text-primary mb-3">{vendor.price}</p>
+                                <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
+                                  {vendor.description}
+                                </p>
+                                <Button 
+                                  size="sm" 
+                                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  View Details
+                                </Button>
+                              </div>
+                            </div>
+                          </Link>
                         </div>
-                        <h4 className="font-semibold text-sm truncate mt-2" style={{ color: '#2c3e50' }}>{vendor.name}</h4>
-                        <p className="text-sm" style={{ color: 'rgb(113, 113, 122)' }}>{vendor.location} - {vendor.price}</p>
-                        <p className="text-sm line-clamp-2" style={{ color: 'rgb(113, 113, 122)', display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{vendor.description}</p>
-                      </Link>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             ))}
+
+            {/* No vendors found state */}
+            {totalVendors === 0 && (
+              <div className="text-center py-16">
+                <div className="text-6xl mb-4">🎈</div>
+                <h3 className="text-2xl font-bold mb-2" style={{ color: "#222222" }}>
+                  No vendors found yet
+                </h3>
+                <p className="text-muted-foreground mb-6">
+                  Try adjusting your search filters or exploring different categories
+                </p>
+                <Button 
+                  onClick={() => router.push("/")}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Start New Search
+                </Button>
+              </div>
+            )}
           </div>
-          <div className="hidden md:block w-full md:w-1/3 sticky top-28 h-[calc(100vh-112px)]" ref={mapContainer} />
+          
+          {/* Map sidebar */}
+          <div className="hidden lg:block w-full lg:w-1/3">
+            <div className="sticky top-28">
+              <div className="bg-white rounded-2xl shadow-lg border border-border overflow-hidden">
+                <div className="p-4 bg-gradient-to-r from-primary/10 to-accent/10">
+                  <h3 className="font-bold text-lg flex items-center gap-2" style={{ color: "#222222" }}>
+                    <span>🗺️</span>
+                    Vendor Locations
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Find vendors near you
+                  </p>
+                </div>
+                <div 
+                  ref={mapContainer} 
+                  className="h-[calc(100vh-200px)] min-h-[400px]"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
+      {/* Enhanced Shortlist Widget */}
       <div className="fixed bottom-6 right-6 z-50">
-        <div className="bg-[#14b8a6] rounded-2xl shadow-lg px-6 py-4 animate-fade-in flex flex-col items-center min-w-[220px] relative">
-          <div className="absolute top-2 right-2 group" style={{ zIndex: 2 }}>
+        <div className="bg-white rounded-2xl shadow-xl border-2 border-primary px-6 py-4 animate-fade-in flex flex-col items-center min-w-[260px] relative">
+          {/* Celebration badge */}
+          <div className="absolute -top-2 -right-2">
+            <span className="bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">
+              🎉
+            </span>
+          </div>
+          
+          {/* Info tooltip */}
+          <div className="absolute top-2 left-2 group" style={{ zIndex: 2 }}>
             <span className="inline-block align-middle cursor-pointer relative">
-              <span className="bg-white/60 rounded-full p-[2.5px] shadow-sm flex items-center justify-center" style={{ display: 'inline-flex' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#1f2937" className="w-[17px] h-[17px]">
-                  <circle cx="12" cy="12" r="9" stroke="#1f2937" strokeWidth="1.5" fill="none" />
+              <span className="bg-primary/10 rounded-full p-[2.5px] shadow-sm flex items-center justify-center" style={{ display: 'inline-flex' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-[17px] h-[17px] text-primary">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" fill="none" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-4m0-4h.01" />
                 </svg>
               </span>
-              <span className="opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-200 absolute right-0 top-7 bg-white text-[#1f2937] text-sm rounded-2xl shadow-lg px-4 py-2 max-w-xs whitespace-normal z-50 border border-[#e0f7f5]" style={{ minWidth: '220px', fontSize: '0.95rem', lineHeight: '1.4' }}>
-                <span className="font-semibold text-[#14b8a6]">What’s this?</span> <br />
-                You can select your fave vendors as you browse, then edit your lineup before locking it in.
+              <span className="opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-200 absolute left-0 top-8 bg-white text-foreground text-sm rounded-2xl shadow-lg px-4 py-3 max-w-xs whitespace-normal z-50 border border-border" style={{ minWidth: '220px', fontSize: '0.95rem', lineHeight: '1.4' }}>
+                <span className="font-semibold text-primary">What&apos;s this?</span> <br />
+                Select your favorite vendors as you browse, then edit your lineup before booking your dream party team!
               </span>
             </span>
           </div>
-          <span className="text-white font-semibold whitespace-nowrap text-sm mb-2 text-center">
-            {selectedVendors.size} Vendor{selectedVendors.size !== 1 ? 's' : ''} Selected
-          </span>
-          <div className="flex gap-2 w-full justify-center">
+          
+          <div className="text-center mb-4">
+            <span className="text-primary font-bold text-lg whitespace-nowrap mb-1 block">
+              {selectedVendors.size} Vendor{selectedVendors.size !== 1 ? 's' : ''} Selected
+            </span>
+            <span className="text-muted-foreground text-sm">
+              Ready to plan something amazing? ✨
+            </span>
+          </div>
+          
+          <div className="flex gap-3 w-full">
             <Button
-              variant="ghost"
-              className="bg-white text-[#14b8a6] font-semibold rounded-full px-4 py-2 hover:bg-[#e0f7f5] hover:text-[#0f766e] transition-colors text-sm w-full"
-              style={{ boxShadow: '0 1px 2px 0 rgba(16,24,40,0.05)' }}
+              variant="outline"
+              className="border-primary text-primary font-semibold rounded-full px-4 py-2 hover:bg-primary hover:text-white transition-all text-sm flex-1"
               onClick={() => setIsShortlistModalOpen(true)}
             >
-              Edit Shortlist
+              📝 Edit List
             </Button>
             <Button
-              variant="ghost"
-              className="bg-white text-[#14b8a6] font-semibold rounded-full px-4 py-2 hover:bg-[#e0f7f5] hover:text-[#0f766e] transition-colors text-sm w-full"
-              style={{ boxShadow: '0 1px 2px 0 rgba(16,24,40,0.05)' }}
+              variant="default"
+              className="bg-primary text-white font-semibold rounded-full px-4 py-2 hover:bg-primary/90 transition-all text-sm flex-1"
               onClick={handleContinueBooking}
             >
-              Book Vendors
+              🚀 Book Now
             </Button>
           </div>
         </div>
-      </div>
-
+      </div>      {/* Enhanced Filter Modal */}
       {isFilterModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setIsFilterModalOpen(false)}>
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-4">Filters</h3>
-            {Object.keys(categories).map(cat => (
-              <div key={cat} className="mb-4">
-                <h4 className="text-md font-medium mb-2">{cat}</h4>
-                <div className="space-y-2">
-                  {cat === "Cakes & Desserts" && (
-                    <>
-                      <label className="flex items-center">
-                        <input type="checkbox" checked={filters[cat].includes("delivery")} onChange={(e) => handleFilterChange(cat, "delivery", e.target.checked)} />
-                        <span className="ml-2">Delivery</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" checked={filters[cat].includes("customOrders")} onChange={(e) => handleFilterChange(cat, "customOrders", e.target.checked)} />
-                        <span className="ml-2">Custom Orders</span>
-                      </label>
-                    </>
-                  )}
-                  {cat === "Venue Hire" && (
-                    <>
-                      <label className="flex items-center">
-                        <input type="checkbox" checked={filters[cat].includes("indoor")} onChange={(e) => handleFilterChange(cat, "indoor", e.target.checked)} />
-                        <span className="ml-2">Indoor</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" checked={filters[cat].includes("parking")} onChange={(e) => handleFilterChange(cat, "parking", e.target.checked)} />
-                        <span className="ml-2">Parking</span>
-                      </label>
-                    </>
-                  )}
-                </div>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setIsFilterModalOpen(false)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-border" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b border-border">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-bold flex items-center gap-2" style={{ color: "#222222" }}>
+                  <span>🔍</span>
+                  Filter Your Perfect Vendors
+                </h3>
+                <button
+                  onClick={() => setIsFilterModalOpen(false)}
+                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                  aria-label="Close filters"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
-            ))}
-            <Button onClick={() => setIsFilterModalOpen(false)} className="mt-4 w-full bg-primary text-white">Apply Filters</Button>
+              <p className="text-muted-foreground mt-2">
+                Narrow down your search to find exactly what you need for your celebration!
+              </p>
+            </div>
+            
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              {Object.keys(categories).map(cat => (
+                <div key={cat} className="mb-6 last:mb-0">
+                  <h4 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: "#222222" }}>
+                    <span 
+                      className="inline-block w-4 h-4 rounded-full"
+                      style={{ backgroundColor: categoryColors[cat] }}
+                    />
+                    {cat}
+                  </h4>
+                  <div className="space-y-3 pl-6">
+                    {cat === "Cakes & Desserts" && (
+                      <>
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                          <input 
+                            type="checkbox" 
+                            checked={filters[cat].includes("delivery")} 
+                            onChange={(e) => handleFilterChange(cat, "delivery", e.target.checked)}
+                            className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
+                          />
+                          <span className="text-foreground group-hover:text-primary transition-colors">🚚 Delivery Available</span>
+                        </label>
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                          <input 
+                            type="checkbox" 
+                            checked={filters[cat].includes("customOrders")} 
+                            onChange={(e) => handleFilterChange(cat, "customOrders", e.target.checked)}
+                            className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
+                          />
+                          <span className="text-foreground group-hover:text-primary transition-colors">🎨 Custom Orders</span>
+                        </label>
+                      </>
+                    )}
+                    {cat === "Venue Hire" && (
+                      <>
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                          <input 
+                            type="checkbox" 
+                            checked={filters[cat].includes("indoor")} 
+                            onChange={(e) => handleFilterChange(cat, "indoor", e.target.checked)}
+                            className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
+                          />
+                          <span className="text-foreground group-hover:text-primary transition-colors">🏠 Indoor Space</span>
+                        </label>
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                          <input 
+                            type="checkbox" 
+                            checked={filters[cat].includes("parking")} 
+                            onChange={(e) => handleFilterChange(cat, "parking", e.target.checked)}
+                            className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
+                          />
+                          <span className="text-foreground group-hover:text-primary transition-colors">🅿️ Parking Available</span>
+                        </label>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="p-6 border-t border-border">
+              <Button 
+                onClick={() => setIsFilterModalOpen(false)} 
+                className="w-full bg-primary text-white hover:bg-primary/90 rounded-full text-lg py-3"
+              >
+                ✨ Apply Filters & Find Magic
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -853,6 +1063,14 @@ function SearchContent() {
         }
         `}
       </style>
+
+      {/* Hamburger Drawer */}
+      {isDrawerOpen && (
+        <HamburgerDrawer 
+          isOpen={isDrawerOpen} 
+          onToggle={() => setIsDrawerOpen(!isDrawerOpen)} 
+        />
+      )}
     </div>
   );
 }

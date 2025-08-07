@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import Image from "next/image";
 import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import DatePicker from "react-datepicker";
@@ -58,14 +58,28 @@ export default function Navbar() {
   }, [searchParams, setLocation, setBudget, setVibe, setDate]);
 
   return (
-    <nav className="w-full bg-background sticky top-0 z-50 py-1 flex items-center justify-between px-4">
-      {/* Brand: Sparkles icon is 1.5rem (24px), text is 1.5rem (24px) bold */}
+    <nav className="w-full bg-white sticky top-0 z-50 py-3 flex items-center justify-between px-4 border-b border-gray-100">
+      {/* Brand: Updated to use logo image instead of icon+text */}
       <Link
         href="/"
-        className="flex items-center space-x-2 font-bold text-foreground font-sans tracking-tight -ml-8"
+        className="flex items-center font-bold text-foreground font-sans tracking-tight -ml-8"
       >
-        <Sparkles className="h-8 w-8 text-primary" />
-        <span style={{ fontSize: "26px" }}>PartaiBook</span>
+        <Image 
+          src="/logo.png" 
+          alt="PartaiBook" 
+          width={140} 
+          height={56} 
+          className="h-[56px] w-auto object-contain" 
+          priority
+          quality={100}
+          unoptimized={true}
+          style={{ 
+            imageRendering: 'crisp-edges',
+            WebkitFontSmoothing: 'antialiased',
+            backfaceVisibility: 'hidden',
+            transform: 'translateZ(0)'
+          }}
+        />
       </Link>
 
       {pathname !== "/search" && pathname !== "/" && (
@@ -112,7 +126,7 @@ export default function Navbar() {
         </div>
       )}
 
-      <div className="flex gap-1 items-center mr-[-32px]">
+      <div className="flex gap-1 items-center">
         {pathname !== "/search" && (
           <button
             onClick={() => {
@@ -121,14 +135,14 @@ export default function Navbar() {
                 section.scrollIntoView({ behavior: "smooth" });
               }
             }}
-            className="text-base font-normal text-foreground hover:text-primary transition bg-transparent px-4 py-2 rounded focus:outline-none font-sans mr-2"
+            className="text-base font-normal text-foreground hover:text-primary transition bg-transparent px-4 py-2 rounded focus:outline-none font-sans mr-4 mt-1"
           >
             How it works
           </button>
         )}
-        <div className="ml-1" ref={hamburgerRef}>
+        <div className="ml-3" ref={hamburgerRef}>
           <HamburgerDrawer
-            className="text-white bg-primary hover:bg-primary/90 transition-colors rounded-sm p-2 flex items-center justify-center"
+            className=""
             aria-label="Open menu"
             isOpen={isHamburgerOpen}
             onToggle={() => setIsHamburgerOpen(!isHamburgerOpen)}

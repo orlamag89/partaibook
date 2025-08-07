@@ -13,7 +13,7 @@ interface HamburgerDrawerProps {
   onToggle: () => void;
 }
 
-export default function HamburgerDrawer({ className = "", drawerRef, isOpen, onToggle }: HamburgerDrawerProps) {
+export default function HamburgerDrawer({ drawerRef, isOpen, onToggle }: HamburgerDrawerProps) {
   const { open } = useLoginModal();
 
   return (
@@ -21,16 +21,16 @@ export default function HamburgerDrawer({ className = "", drawerRef, isOpen, onT
       {/* Hamburger + Account Icon */}
       <button
         onClick={onToggle}
-        className={`group flex items-center gap-2 focus:outline-none bg-primary hover:bg-primary/90 transition-colors rounded-full px-4 py-2 ${className}`}
+        className="group flex items-center gap-2 focus:outline-none bg-white border border-[#222222] hover:bg-gray-50 transition-colors rounded-sm px-2.5 py-2"
         aria-label="Open menu"
       >
         {/* User Silhouette Icon */}
-        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+        <svg className="w-5 h-5 text-[#222222]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
           <circle cx="12" cy="8.5" r="4" />
           <path d="M4 19c0-2.5 3.5-4.5 8-4.5s8 2 8 4.5" />
         </svg>
         {/* Hamburger Icon */}
-        <svg className="w-[22px] h-[22px] text-white group-hover:stroke-white transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+        <svg className="w-[22px] h-[22px] text-[#222222] group-hover:stroke-[#222222] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
