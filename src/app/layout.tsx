@@ -3,6 +3,7 @@ import './globals.css';
 import { Component } from 'react';
 import { SearchProvider } from '@/context/SearchContext';
 import { LoginModalProvider } from '@/context/LoginModalContext';
+import { CartProvider } from '@/context/CartContext';
 import LoginModalRoot from './LoginModalRoot';
 
 // Error Boundary Component
@@ -27,12 +28,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" dir="ltr">
       <body className="min-h-screen bg-background">
         <ErrorBoundary>
-          <SearchProvider>
-            <LoginModalProvider>
-              <LoginModalRoot />
-              {children}
-            </LoginModalProvider>
-          </SearchProvider>
+          <CartProvider>
+            <SearchProvider>
+              <LoginModalProvider>
+                <LoginModalRoot />
+                {children}
+              </LoginModalProvider>
+            </SearchProvider>
+          </CartProvider>
         </ErrorBoundary>
       </body>
     </html>
